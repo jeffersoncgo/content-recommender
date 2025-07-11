@@ -12,13 +12,13 @@ window.addEventListener('scroll', async () => {
 
   // Prevent loading more if we've already used all watched IDs
   if (usedWatchedIds.size >= window.Played.length) {
-    console.info("All watched movies have been used. No more recommendations to fetch.");
+    console.info("All watched Contents have been used. No more recommendations to fetch.");
     return;
   }
 
   // Fetch and append new batch
   try {
-    getSugestions(moviesToCheck, similarsToShow) // Default values for demonstration
+    getSugestions(ContentsToCheck, similarsToShow) // Default values for demonstration
       .then(recommendations => {
         displayRecommendations(recommendations);
       })

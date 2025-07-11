@@ -7,22 +7,22 @@ const jellyfinloginActionBtn = document.getElementById('loginAction');
 const cleanMemoryBtn = document.getElementById('cleanMemoryBtn');
 const recommendationsContainer = document.getElementById('recommendations-container');
 
-let moviesToCheck = 3;
+let ContentsToCheck = 3;
 let similarsToShow = 6;
 
-// Function to generate Jellyfin movie detail URL
-function makeMovieUrl(id) {
+// Function to generate Jellyfin Content detail URL
+function makeContentUrl(id) {
   // Safely construct URL, assuming jellyfin object is available and has Server properties
   if (window.jellyfin && window.jellyfin.Server && window.jellyfin.Server.ExternalAddress && window.jellyfin.Server.Id) {
     return `${window.jellyfin.Server.ExternalAddress}/web/#/details?id=${id}&serverId=${window.jellyfin.Server.Id}`;
   }
   // Fallback if jellyfin object is not ready or incomplete
-  console.warn("Jellyfin server details not available, cannot create full movie URL.");
+  console.warn("Jellyfin server details not available, cannot create full Content URL.");
   return `javascript:void(0);`; // Placeholder or error indicator
 }
 
 // Function to Create "Because you watched" Container
-function createBecauseYouWatchedContainer(movie) {
+function createBecauseYouWatchedContainer(Content) {
   const container = document.createElement('div');
   container.classList.add('because-you-watched-container');
 
@@ -30,59 +30,59 @@ function createBecauseYouWatchedContainer(movie) {
   title.classList.add('because-you-watched-title');
   title.textContent = 'Because you watched '; // Base text
 
-  // Make an "a" link to the movie, using makeMovieUrl function and append to the title element
-  const movieLink = document.createElement('a');
-  movieLink.href = makeMovieUrl(movie.Id);
-  movieLink.textContent = movie.Name;
-  movieLink.target = "_blank"; // Open in new tab
-  movieLink.classList.add('movie-link');
+  // Make an "a" link to the Content, using makeContentUrl function and append to the title element
+  const ContentLink = document.createElement('a');
+  ContentLink.href = makeContentUrl(Content.Id);
+  ContentLink.textContent = Content.Name;
+  ContentLink.target = "_blank"; // Open in new tab
+  ContentLink.classList.add('Content-link');
   // Add aria-label for accessibility
-  movieLink.setAttribute('aria-label', `View ${movie.Name} on Jellyfin`);
+  ContentLink.setAttribute('aria-label', `View ${Content.Name} on Jellyfin`);
 
-  title.appendChild(movieLink);
+  title.appendChild(ContentLink);
   container.appendChild(title);
 
-  const movieGrid = document.createElement('div');
-  movieGrid.classList.add('movie-grid');
-  container.appendChild(movieGrid);
+  const ContentGrid = document.createElement('div');
+  ContentGrid.classList.add('Content-grid');
+  container.appendChild(ContentGrid);
 
-  return { container, movieGrid };
+  return { container, ContentGrid };
 }
 
-// Function to create a single movie card
-function createMovieCard(movie) {
-  const movieCard = document.createElement('div');
-  movieCard.classList.add('movie-card');
-  movieCard.setAttribute('data-movie-id', movie.Id); // Useful for event listeners later
+// Function to create a single Content card
+function createContentCard(Content) {
+  const ContentCard = document.createElement('div');
+  ContentCard.classList.add('Content-card');
+  ContentCard.setAttribute('data-Content-id', Content.Id); // Useful for event listeners later
 
-  // Use a fallback image if movie.ImageUrl is not provided or invalid
-  const imageUrl = movie.ImageUrl || "https://placehold.co/200x280/808080/FFFFFF?text=No+Image";
+  // Use a fallback image if Content.ImageUrl is not provided or invalid
+  const imageUrl = Content.ImageUrl || "https://placehold.co/200x280/808080/FFFFFF?text=No+Image";
 
-  movieCard.innerHTML = `
-        <img src="${imageUrl}" alt="${movie.Name} cover">
-        <div class="movie-info">
-            <h3>${movie.Name}</h3>
-            <p class="rating">Score: ${movie.similarityScore !== undefined ? movie.similarityScore.toFixed(0) + '%' : 'N/A'}</p>
-            <p class="rating">Community Rating: ${movie.CommunityRating !== undefined ? movie.CommunityRating.toFixed(2) : 'N/A'}</p>
-            <p class="year">Year: ${movie.ProductionYear || 'N/A'}</p>
+  ContentCard.innerHTML = `
+        <img src="${imageUrl}" alt="${Content.Name} cover">
+        <div class="Content-info">
+            <h3>${Content.Name}</h3>
+            <p class="rating">Score: ${Content.similarityScore !== undefined ? Content.similarityScore.toFixed(0) + '%' : 'N/A'}</p>
+            <p class="rating">Community Rating: ${Content.CommunityRating !== undefined ? Content.CommunityRating.toFixed(2) : 'N/A'}</p>
+            <p class="year">Year: ${Content.ProductionYear || 'N/A'}</p>
         </div>
     `;
 
-  // Make the movie card clickable to open the movie details in Jellyfin
-  movieCard.addEventListener('click', () => {
-    window.open(makeMovieUrl(movie.Id), '_blank');
+  // Make the Content card clickable to open the Content details in Jellyfin
+  ContentCard.addEventListener('click', () => {
+    window.open(makeContentUrl(Content.Id), '_blank');
   });
 
   // Add keyboard accessibility for card click
-  movieCard.addEventListener('keydown', (event) => {
+  ContentCard.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault(); // Prevent default scroll or action
-      window.open(makeMovieUrl(movie.Id), '_blank');
+      window.open(makeContentUrl(Content.Id), '_blank');
     }
   });
-  movieCard.setAttribute('tabindex', '0'); // Make it focusable
+  ContentCard.setAttribute('tabindex', '0'); // Make it focusable
 
-  return movieCard;
+  return ContentCard;
 }
 
 // Function to display recommendations
@@ -93,18 +93,18 @@ function displayRecommendations(recommendations) {
   }
 
   if (!recommendations || recommendations.length === 0) {
-    recommendationsContainer.innerHTML = '<div class="no-results-message">No recommendations found. Try watching more movies!</div>';
+    recommendationsContainer.innerHTML = '<div class="no-results-message">No recommendations found. Try watching more Contents!</div>';
     return;
   }
 
-  recommendations.forEach(watchedMovieData => {
-    // Ensure watchedMovieData and watchedMovieData.Recommendations are valid
-    if (!watchedMovieData || !watchedMovieData.Recommendations) return;
+  recommendations.forEach(watchedContentData => {
+    // Ensure watchedContentData and watchedContentData.Recommendations are valid
+    if (!watchedContentData || !watchedContentData.Recommendations) return;
 
-    const { container, movieGrid } = createBecauseYouWatchedContainer(watchedMovieData);
-    watchedMovieData.Recommendations.forEach(movie => {
-      const movieCardElement = createMovieCard(movie);
-      movieGrid.appendChild(movieCardElement);
+    const { container, ContentGrid } = createBecauseYouWatchedContainer(watchedContentData);
+    watchedContentData.Recommendations.forEach(Content => {
+      const ContentCardElement = createContentCard(Content);
+      ContentGrid.appendChild(ContentCardElement);
     });
     recommendationsContainer.appendChild(container);
   });
@@ -162,7 +162,7 @@ function InitializeJellyfin() {
     },
     onLibraryLoad: () => { // This callback is directly handled by the Jellyfin class when libraries are ready
       // Fetch and display recommendations when libraries are loaded
-      getSugestions(moviesToCheck, similarsToShow) // Default values for demonstration
+      getSugestions(ContentsToCheck, similarsToShow) // Default values for demonstration
           .then(recommendations => displayRecommendations(recommendations))
           .catch(error => {
               console.error("Error fetching recommendations:", error);
@@ -304,23 +304,23 @@ const getUnplayed = async Library => {
 }
 
 // Main function to get suggestions using findSimilar
-const getSugestions = async (numberOfRandomWatchedMovies = 10, numberOfSimilarMoviesPerWatched = 7) => {
+const getSugestions = async (numberOfRandomWatchedContents = 10, numberOfSimilarContentsPerWatched = 7) => {
   try {
-    const watchedMovies = await getPlayed();
-    window.Played = watchedMovies;
+    const watchedContents = await getPlayed();
+    window.Played = watchedContents;
 
-    const unwatchedMovies = await getUnplayed();
-    window.Unplayed = unwatchedMovies;
+    const unwatchedContents = await getUnplayed();
+    window.Unplayed = unwatchedContents;
   
-    if (!watchedMovies || watchedMovies.length === 0) {
-        console.warn("No watched movies found. Cannot generate recommendations based on history.");
-        // Optionally, fall back to a general popular movies list or a default set.
-        recommendationsContainer.innerHTML = '<div class="no-results-message">Watch some movies to get recommendations!</div>';
+    if (!watchedContents || watchedContents.length === 0) {
+        console.warn("No watched Contents found. Cannot generate recommendations based on history.");
+        // Optionally, fall back to a general popular Contents list or a default set.
+        recommendationsContainer.innerHTML = '<div class="no-results-message">Watch some Contents to get recommendations!</div>';
         return [];
     }
-    if (!unwatchedMovies || unwatchedMovies.length === 0) {
-        console.warn("No unwatched movies found. Cannot generate recommendations.");
-        recommendationsContainer.innerHTML = '<div class="no-results-message">No unwatched movies available.</div>';
+    if (!unwatchedContents || unwatchedContents.length === 0) {
+        console.warn("No unwatched Contents found. Cannot generate recommendations.");
+        recommendationsContainer.innerHTML = '<div class="no-results-message">No unwatched Contents available.</div>';
         return [];
     }
 
@@ -330,7 +330,7 @@ const getSugestions = async (numberOfRandomWatchedMovies = 10, numberOfSimilarMo
         return [];
     }
 
-    const recommendations = findSimilar(watchedMovies, unwatchedMovies, numberOfRandomWatchedMovies, numberOfSimilarMoviesPerWatched);
+    const recommendations = findSimilar(watchedContents, unwatchedContents, numberOfRandomWatchedContents, numberOfSimilarContentsPerWatched);
     return recommendations;
 
   } catch (error) {

@@ -16,21 +16,21 @@ const WEIGHTS = {
 const MAX_YEAR_DIFF = 80;  // Max range considered meaningful for production year
 const EPSILON = 1e-6;      // To prevent division by zero in unions
 
-const usedWatchedIds = new Set();   // Track already tried watched movies
-const usedUnwatchedIds = new Set(); // Track recommended unwatched movies to avoid duplicates
+const usedWatchedIds = new Set();   // Track already tried watched Contents
+const usedUnwatchedIds = new Set(); // Track recommended unwatched Contents to avoid duplicates
 
 
-function buildRarityMap(allMovies) {
+function buildRarityMap(allContents) {
   const genreFreq = {};
   const tagFreq = {};
-  const totalMovies = allMovies.length;
+  const totalContents = allContents.length;
 
-  for (const movie of allMovies) {
-    for (const g of movie.Genres || []) {
+  for (const Content of allContents) {
+    for (const g of Content.Genres || []) {
       const genre = g.toLowerCase();
       genreFreq[genre] = (genreFreq[genre] || 0) + 1;
     }
-    for (const t of movie.Tags || []) {
+    for (const t of Content.Tags || []) {
       const tag = t.toLowerCase();
       tagFreq[tag] = (tagFreq[tag] || 0) + 1;
     }
@@ -40,10 +40,10 @@ function buildRarityMap(allMovies) {
   const tagRarity = {};
 
   for (const g in genreFreq) {
-    genreRarity[g] = Math.log((totalMovies + 1) / (genreFreq[g] + 1));
+    genreRarity[g] = Math.log((totalContents + 1) / (genreFreq[g] + 1));
   }
   for (const t in tagFreq) {
-    tagRarity[t] = Math.log((totalMovies + 1) / (tagFreq[t] + 1));
+    tagRarity[t] = Math.log((totalContents + 1) / (tagFreq[t] + 1));
   }
 
   return { genreRarity, tagRarity };
@@ -52,7 +52,7 @@ function buildRarityMap(allMovies) {
 
 
 // --- REFINED: Helper Function to Calculate Similarity ---
-function calculateSimilarity(targetMovie, currentMovie, rarityProfile) {
+function calculateSimilarity(targetContent, currentContent, rarityProfile) {
   let rawScore = 0;
   let maxScore = 0;
 
@@ -73,28 +73,28 @@ function calculateSimilarity(targetMovie, currentMovie, rarityProfile) {
   };
 
   // Genres
-  const genresA = new Set((targetMovie.Genres || []).map(g => g.toLowerCase()));
-  const genresB = new Set((currentMovie.Genres || []).map(g => g.toLowerCase()));
+  const genresA = new Set((targetContent.Genres || []).map(g => g.toLowerCase()));
+  const genresB = new Set((currentContent.Genres || []).map(g => g.toLowerCase()));
   rawScore += jaccardRarityWeighted(genresA, genresB, rarityProfile.genreRarity, 4);
   maxScore += 4;
 
   // Tags
-  const tagsA = new Set((targetMovie.Tags || []).map(t => t.toLowerCase()));
-  const tagsB = new Set((currentMovie.Tags || []).map(t => t.toLowerCase()));
+  const tagsA = new Set((targetContent.Tags || []).map(t => t.toLowerCase()));
+  const tagsB = new Set((currentContent.Tags || []).map(t => t.toLowerCase()));
   rawScore += jaccardRarityWeighted(tagsA, tagsB, rarityProfile.tagRarity, 2.5);
   maxScore += 2.5;
 
   // Community Rating (0–10 scale)
-  if (targetMovie.CommunityRating && currentMovie.CommunityRating) {
-    const diff = Math.abs(targetMovie.CommunityRating - currentMovie.CommunityRating);
+  if (targetContent.CommunityRating && currentContent.CommunityRating) {
+    const diff = Math.abs(targetContent.CommunityRating - currentContent.CommunityRating);
     const ratingSim = Math.max(0, 1 - diff / 10);
     rawScore += ratingSim * 3;
     maxScore += 3;
   }
 
   // Production Year
-  if (targetMovie.ProductionYear && currentMovie.ProductionYear) {
-    const diff = Math.abs(targetMovie.ProductionYear - currentMovie.ProductionYear);
+  if (targetContent.ProductionYear && currentContent.ProductionYear) {
+    const diff = Math.abs(targetContent.ProductionYear - currentContent.ProductionYear);
     const decay = Math.max(0, 1 - diff / MAX_YEAR_DIFF); // Use constant
     rawScore += decay * 2;
     maxScore += 2;
@@ -104,22 +104,22 @@ function calculateSimilarity(targetMovie, currentMovie, rarityProfile) {
 }
 
 
-function findSimilarForOne(targetMovie, unwatchedMovies, limit = 10, allSimilarities = [], rarityProfile) {
+function findSimilarForOne(targetContent, unwatchedContents, limit = 10, allSimilarities = [], rarityProfile) {
   const similarities = [];
-  // Use a Set for efficient checking of already recommended movies
-  const recommendedMovieIds = new Set(allSimilarities.flatMap(group => group.similarMovies.map(s => s.movie.Id)));
+  // Use a Set for efficient checking of already recommended Contents
+  const recommendedContentIds = new Set(allSimilarities.flatMap(group => group.similarContents.map(s => s.Content.Id)));
 
-  for (const movie of unwatchedMovies) {
+  for (const Content of unwatchedContents) {
     // Skip if already watched or already in recommendations
-    if (movie.Id === targetMovie.Id || movie.UserData?.Played || recommendedMovieIds.has(movie.Id)) {
+    if (Content.Id === targetContent.Id || Content.UserData?.Played || recommendedContentIds.has(Content.Id)) {
       continue;
     }
 
-    const similarityScore = calculateSimilarity(targetMovie, movie, rarityProfile);
+    const similarityScore = calculateSimilarity(targetContent, Content, rarityProfile);
 
     // Keep a threshold, but perhaps it could be dynamic or adjusted
     if (similarityScore > 15) {
-      similarities.push({ movie, similarityScore });
+      similarities.push({ Content, similarityScore });
     }
   }
 
@@ -127,31 +127,31 @@ function findSimilarForOne(targetMovie, unwatchedMovies, limit = 10, allSimilari
   return similarities.slice(0, limit);
 }
 
-function selectRandomMovies(movies, count) {
-  if (movies.length === 0) return [];
-  if (movies.length <= count) return [...movies];
+function selectRandomContents(Contents, count) {
+  if (Contents.length === 0) return [];
+  if (Contents.length <= count) return [...Contents];
 
-  const shuffled = [...movies].sort(() => 0.5 - Math.random());
+  const shuffled = [...Contents].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 }
 
 // Consolidating taste profile building into one function
-function buildTasteProfile(watchedMovies) {
+function buildTasteProfile(watchedContents) {
   const genreCounts = {};
   const tagCounts = {};
   let totalGenres = 0;
   let totalTags = 0;
 
-  for (const movie of watchedMovies) {
-    if (!movie?.UserData?.Played) continue;
+  for (const Content of watchedContents) {
+    if (!Content?.UserData?.Played) continue;
 
-    for (const genre of movie.Genres || []) {
+    for (const genre of Content.Genres || []) {
       const g = genre.toLowerCase();
       genreCounts[g] = (genreCounts[g] || 0) + 1;
       totalGenres++;
     }
 
-    for (const tag of movie.Tags || []) {
+    for (const tag of Content.Tags || []) {
       const t = tag.toLowerCase();
       tagCounts[t] = (tagCounts[t] || 0) + 1;
       totalTags++;
@@ -161,7 +161,7 @@ function buildTasteProfile(watchedMovies) {
   const genreWeights = {};
   const tagWeights = {};
 
-  // Normalize weights to represent proportion of watched movies
+  // Normalize weights to represent proportion of watched Contents
   for (const g in genreCounts) {
     genreWeights[g] = genreCounts[g] / totalGenres;
   }
@@ -174,7 +174,7 @@ function buildTasteProfile(watchedMovies) {
 
 // Removed extractTasteProfile as buildTasteProfile now covers its functionality.
 
-function computeTasteSimilarity(movie, tasteProfile, options = {}) {
+function computeTasteSimilarity(Content, tasteProfile, options = {}) {
   const {
     genreWeights,
     tagWeights
@@ -186,24 +186,24 @@ function computeTasteSimilarity(movie, tasteProfile, options = {}) {
     genrePenaltyThreshold = 4 // too many genres dilute meaning
   } = options;
 
-  const movieGenres = (movie.Genres || []).map(g => g.toLowerCase());
-  const movieTags = (movie.Tags || []).map(t => t.toLowerCase());
+  const ContentGenres = (Content.Genres || []).map(g => g.toLowerCase());
+  const ContentTags = (Content.Tags || []).map(t => t.toLowerCase());
 
   let genreScore = 0;
-  for (const genre of movieGenres) {
+  for (const genre of ContentGenres) {
     const weight = genreWeights[genre];
     if (weight) genreScore += weight;
   }
 
   let tagScore = 0;
-  for (const tag of movieTags) {
+  for (const tag of ContentTags) {
     const weight = tagWeights[tag];
     if (weight) tagScore += weight * 1.25; // bonus for rare, specific tags
   }
 
-  // ✂️ Penalty for overly generic movies (too many genres)
-  const genrePenalty = movieGenres.length > genrePenaltyThreshold
-    ? Math.pow(0.85, movieGenres.length - genrePenaltyThreshold) // Use Math.pow for clarity
+  // ✂️ Penalty for overly generic Contents (too many genres)
+  const genrePenalty = ContentGenres.length > genrePenaltyThreshold
+    ? Math.pow(0.85, ContentGenres.length - genrePenaltyThreshold) // Use Math.pow for clarity
     : 1;
 
   const totalScore = (
@@ -218,54 +218,54 @@ function computeTasteSimilarity(movie, tasteProfile, options = {}) {
 
 
 // --- Main Execution Logic ---
-function findSimilar(watchedMovies, unwatchedMovies, numberOfRandomWatchedMovies = 10, numberOfSimilarMoviesPerWatched = 7) {
+function findSimilar(watchedContents, unwatchedContents, numberOfRandomWatchedContents = 10, numberOfSimilarContentsPerWatched = 7) {
   try {
-    const trulyUnwatchedMovies = unwatchedMovies.filter(
+    const trulyUnwatchedContents = unwatchedContents.filter(
       m => !(m.UserData?.Played)
     );
 
-    if (trulyUnwatchedMovies.length === 0) {
-      console.log("No truly unwatched movies available after filtering.");
-      return []; // Return empty array if no movies
+    if (trulyUnwatchedContents.length === 0) {
+      console.log("No truly unwatched Contents available after filtering.");
+      return []; // Return empty array if no Contents
     }
 
-    const allMovies = [...watchedMovies, ...trulyUnwatchedMovies];
-    const rarityProfile = buildRarityMap(allMovies);
+    const allContents = [...watchedContents, ...trulyUnwatchedContents];
+    const rarityProfile = buildRarityMap(allContents);
 
     const allSimilarities = [];
 
-    const availableWatched = [...watchedMovies];
+    const availableWatched = [...watchedContents];
     let attempts = 0;
-    const maxAttempts = watchedMovies.length * 2; // Prevent infinite loops
+    const maxAttempts = watchedContents.length * 2; // Prevent infinite loops
 
-    // Improved loop to ensure we try to get enough unique watched movies as anchors
-    while (allSimilarities.length < numberOfRandomWatchedMovies && availableWatched.length > 0 && attempts < maxAttempts) {
+    // Improved loop to ensure we try to get enough unique watched Contents as anchors
+    while (allSimilarities.length < numberOfRandomWatchedContents && availableWatched.length > 0 && attempts < maxAttempts) {
       const candidatePool = availableWatched.filter(m => !usedWatchedIds.has(m.Id));
-      if (candidatePool.length === 0) break; // No more unique watched movies to select from
+      if (candidatePool.length === 0) break; // No more unique watched Contents to select from
 
-      const randomWatched = selectRandomMovies(candidatePool, 1)[0];
+      const randomWatched = selectRandomContents(candidatePool, 1)[0];
       if (!randomWatched) break; // Should not happen if candidatePool is not empty
 
       usedWatchedIds.add(randomWatched.Id);
 
-      // Filter unwatched movies to exclude those already recommended from any previous target movie
-      const availableUnwatched = trulyUnwatchedMovies.filter(m => !usedUnwatchedIds.has(m.Id));
+      // Filter unwatched Contents to exclude those already recommended from any previous target Content
+      const availableUnwatched = trulyUnwatchedContents.filter(m => !usedUnwatchedIds.has(m.Id));
 
-      const similarMovies = findSimilarForOne(
+      const similarContents = findSimilarForOne(
         randomWatched,
         availableUnwatched,
-        numberOfSimilarMoviesPerWatched,
+        numberOfSimilarContentsPerWatched,
         allSimilarities, // Pass current recommendations to avoid duplicates
         rarityProfile
       );
 
-      if (similarMovies.length > 0) {
-        // Add the IDs of newly recommended movies to the set of used unwatched movies
-        similarMovies.forEach(entry => usedUnwatchedIds.add(entry.movie.Id));
+      if (similarContents.length > 0) {
+        // Add the IDs of newly recommended Contents to the set of used unwatched Contents
+        similarContents.forEach(entry => usedUnwatchedIds.add(entry.Content.Id));
 
         allSimilarities.push({
-          targetMovie: randomWatched,
-          similarMovies: similarMovies
+          targetContent: randomWatched,
+          similarContents: similarContents
         });
       }
 
@@ -277,17 +277,17 @@ function findSimilar(watchedMovies, unwatchedMovies, numberOfRandomWatchedMovies
       return []; // Return empty array if no recommendations
     }
 
-    const recommendations = allSimilarities.map(({ targetMovie, similarMovies }) => ({
-      Name: targetMovie.Name,
-      Id: targetMovie.Id,
-      Recommendations: similarMovies.map(({ movie, similarityScore }) => ({
-        Name: movie.Name,
-        Id: movie.Id,
-        Genres: movie.Genres,
-        CommunityRating: movie.CommunityRating,
-        ProductionYear: movie.ProductionYear,
+    const recommendations = allSimilarities.map(({ targetContent, similarContents }) => ({
+      Name: targetContent.Name,
+      Id: targetContent.Id,
+      Recommendations: similarContents.map(({ Content, similarityScore }) => ({
+        Name: Content.Name,
+        Id: Content.Id,
+        Genres: Content.Genres,
+        CommunityRating: Content.CommunityRating,
+        ProductionYear: Content.ProductionYear,
         similarityScore: Math.round(similarityScore),
-        ImageUrl: jellyfin.makeImageUrl(movie.Id) // Assuming jellyfin object is available globally or passed in
+        ImageUrl: jellyfin.makeImageUrl(Content.Id) // Assuming jellyfin object is available globally or passed in
       }))
     }));
 
