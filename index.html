@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommender</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+
+  <div class="header">
+    <h1>Movie Recommender</h1>
+    <div class="buttons">
+      <a href="https://github.com/jeffersoncgo/CoverMaker" target="_blank"><i class="fa-brands fa-github"></i></a>
+      <button id="loginBtn" logged-in="false" onClick="showWindow('loginBox');">Login to Jellyfin</button>
+      <button id="cleanMemoryBtn">Clean Saved Memory</button>
+    </div>
+  </div>
+
+  <div class="floatWindow" id="loginBox" style="display: none;">
+    <div class="windowBar">
+      <h2>Jellyfin Login</h2>
+      <button class="closeBtn">×</button>
+    </div>
+    <div class="content">
+      <label for="Server">Server URL</label>
+      <input type="text" id="Server" placeholder="http://yourserver:8096" value="http://localhost:8096" save>
+      <label for="Username">Username</label>
+      <input type="text" id="Username" placeholder="Your username" value="admin" save>
+      <label for="Password">Password</label>
+      <input type="password" id="Password" placeholder="Your password" value="password" save>
+      <!-- connect Button, it just refresh the page, so the onLoad functions can start -->
+      <button id="loginAction">Connect</button>
+      <label id="loginErrorMessage"></label>
+    </div>
+  </div>
+
+    <header>
+        <h1>Movie Recommender</h1>
+        <p>Discover new movies based on your tastes!</p>
+    </header>
+
+    <main id="recommendations-container">
+        <!-- Movie recommendations will be loaded here -->
+        <div class="loading-message">
+            Loading recommendations...
+        </div>
+    </main>
+
+    <script src="https://jeffersoncgo.github.io/cdn/js/common.js"></script>
+    <script src="https://jeffersoncgo.github.io/cdn/js/base.js"></script>
+    <script src="https://jeffersoncgo.github.io/cdn/js/object.js"></script>
+    <script src="https://jeffersoncgo.github.io/cdn/js/controller.js"></script>
+    <script src="https://jeffersoncgo.github.io/cdn/js/observer.js"></script>
+    <script src="https://jeffersoncgo.github.io/cdn/js/pagememory.js"></script>
+    <script src="https://jeffersoncgo.github.io/CoverMaker/js/windowsHandle.js"></script>
+    <script src="https://jeffersoncgo.github.io/CoverMaker/js/jellyfin.js"></script>
+    <!-- <script src="jellyfin.js"></script> -->
+    <script src="findSimilar.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
