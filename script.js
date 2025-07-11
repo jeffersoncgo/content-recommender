@@ -1,4 +1,3 @@
-document.addEventListener('DOMContentLoaded', () => {
   // ======================
   // Initialization
   // ======================
@@ -181,8 +180,6 @@ function loadFieldsFromStorage() {
   window.memory.addEvent('onMemoryIsEmpty', () => dummyStart())
   window.memory.init();
 
-
-});
 
 const getList = async (Library, PlayStatus) => {
   jellyfin.searchParams.Library = Library || 'Filmes'
