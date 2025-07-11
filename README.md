@@ -1,10 +1,10 @@
-# Movie Recommender
+# Content Recommender
 
-This project is a web application that leverages your Jellyfin server to recommend movies based on your watch history and preferences. It analyzes your watched movies and suggests similar, unwatched movies, considering various factors like genre, ratings, actors, directors, and production year.
+This project is a web application that leverages your Jellyfin server to recommend Contents based on your watch history and preferences. It analyzes your watched Contents and suggests similar, unwatched Contents, considering various factors like genre, ratings, actors, directors, and production year.
 
 ## Features
 
-*   **Personalized Recommendations:** Get movie suggestions tailored to your viewing habits.
+*   **Personalized Recommendations:** Get Content suggestions tailored to your viewing habits.
 *   **Jellyfin Integration:** Connects directly to your Jellyfin server to fetch your library data.
 *   **Configurable Similarity:** The `findSimilar.js` file allows you to adjust the weights for different attributes (genre, ratings, actors, etc.) to fine-tune the recommendation algorithm.
 *   **User-Friendly Interface:** A clean and intuitive interface to log in to your Jellyfin server and view recommendations.
@@ -13,8 +13,8 @@ This project is a web application that leverages your Jellyfin server to recomme
 ## How It Works
 
 1.  **Jellyfin Connection:** The application first prompts you to log in to your Jellyfin server using your server URL, username, and password.
-2.  **Data Fetching:** Once connected, it fetches your played and unplayed movie libraries.
-3.  **Similarity Calculation:** The `findSimilar.js` script calculates a similarity score between your watched movies and the unwatched ones. This score is based on a weighted combination of:
+2.  **Data Fetching:** Once connected, it fetches your played and unplayed Content libraries.
+3.  **Similarity Calculation:** The `findSimilar.js` script calculates a similarity score between your watched Contents and the unwatched ones. This score is based on a weighted combination of:
     *   Genres
     *   Critic Ratings
     *   Community Ratings
@@ -23,20 +23,20 @@ This project is a web application that leverages your Jellyfin server to recomme
     *   Studios
     *   Tags
     *   Production Year
-4.  **Recommendation Generation:** It then selects a subset of your watched movies and generates recommendations for each, displaying the top-scoring similar unwatched movies.
+4.  **Recommendation Generation:** It then selects a subset of your watched Contents and generates recommendations for each, displaying the top-scoring similar unwatched Contents.
 
 ## Live Demo
 
-You can try out the Movie Recommender directly on GitHub Pages:
+You can try out the Content Recommender directly on GitHub Pages:
 
-[https://jeffersoncgo.github.io/movie-recommender/](https://jeffersoncgo.github.io/movie-recommender/)
+[https://jeffersoncgo.github.io/content-recommender/](https://jeffersoncgo.github.io/content-recommender/)
 
 ## Project Structure
 
 *   **`index.html`**: The main HTML file that structures the application's user interface, including the login form and the area where recommendations are displayed.
 *   **`style.css`**: Contains all the CSS for styling the application, ensuring a visually appealing and responsive design.
 *   **`script.js`**: The main JavaScript file responsible for handling user interactions, connecting to Jellyfin, processing recommendations, and displaying them.
-*   **`findSimilar.js`**: Contains the core logic for calculating movie similarities and generating recommendations. This is where you can tweak the `WEIGHTS` object to customize the recommendation algorithm.
+*   **`findSimilar.js`**: Contains the core logic for calculating Content similarities and generating recommendations. This is where you can tweak the `WEIGHTS` object to customize the recommendation algorithm.
 *   **External Libraries**: The project utilizes several external JavaScript libraries for Jellyfin API interaction, utility functions, and window management. These are loaded from a CDN.
 
 ## How to Run Locally (Optional)
@@ -45,8 +45,8 @@ While the application is hosted on GitHub Pages, you can also run it locally for
 
 1.  **Clone the Repository:**
     ```bash
-    git clone https://github.com/jeffersoncgo/movie-recommender.git
-    cd movie-recommender
+    git clone https://github.com/jeffersoncgo/Content-recommender.git
+    cd Content-recommender
     ```
 
 2.  **Open `index.html`:**
@@ -58,11 +58,11 @@ While the application is hosted on GitHub Pages, you can also run it locally for
     *   Click the "Connect" button.
 
 4.  **View Recommendations:**
-    Once successfully logged in, the application will fetch your library data and display movie recommendations.
+    Once successfully logged in, the application will fetch your library data and display Content recommendations.
 
 ## Customization
 
-The `findSimilar.js` file contains a `WEIGHTS` object that allows you to adjust the importance of different movie attributes in the similarity calculation. You can modify these values to prioritize certain aspects of movie similarity according to your preferences. For example, increasing the `DIRECTOR_WRITER` weight will give more importance to shared directors or writers.
+The `findSimilar.js` file contains a `WEIGHTS` object that allows you to adjust the importance of different Content attributes in the similarity calculation. You can modify these values to prioritize certain aspects of Content similarity according to your preferences. For example, increasing the `DIRECTOR_WRITER` weight will give more importance to shared directors or writers.
 
 ```javascript
 const WEIGHTS = {
