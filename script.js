@@ -115,7 +115,7 @@ function CreateJellyfin() {
     },
 
     onLibraryLoad: () => {
-      getSugestions(20, 7).then(recommendations => displayRecommendations(recommendations))
+      getSugestions(20, 6).then(recommendations => displayRecommendations(recommendations))
     },
     onSearchFinish: () => {
       // fillJellyfinContainerAttr();
