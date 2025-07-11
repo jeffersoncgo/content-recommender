@@ -14,32 +14,55 @@
   --primary-light: #a78bfa;
   --primary-dark: #5b21b6;
   --primary-darker: #4c1d95;
+  --danger: #f43f5e;
+  --danger-hover: #e11d48;
+  --danger-active: #be123c;
+
 
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-inset: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
 
+
+  /* Sizing */
   --bannerWidth: 300px;
   --bannerHeight: 168px;
   --coverWidth: 180px;
   --coverHeight: 300px;
   --slotWidth: 180px;
   --slotHeight: 300px;
+
+  /* Transitions */
+  --transition-fast: all 0.2s ease-in-out;
+  --transition-medium: all 0.3s ease-in-out;
+
+  /* Borders */
+  --border-radius-sm: 0.25rem;
+  --border-radius-md: 0.375rem;
+  --border-radius-lg: 0.5rem;
 }
 
 /* Basic Reset & Body Styles */
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: var(--font);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background-color: var(--background);
   color: var(--font-color);
+  font-family: var(--font);
+  font-size: var(--font-size);
   min-height: 100vh;
   padding: 0.5rem;
   padding-top: 5rem; /* Space for the fixed header */
@@ -54,255 +77,252 @@ body {
   left: 0;
   width: 100%;
   background: var(--surface);
-  padding: 1rem;
+  padding: 1rem 1.5rem;
   display: flex;
-  justify-content: space-between; /* Pushes title and controls to opposite ends */
+  justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 100; /* Ensure header is above other content */
+  z-index: 1000;
   box-shadow: var(--shadow-md);
+  transition: var(--transition-medium);
 }
 
 .site-header .header-title h1 {
   margin: 0;
-  font-size: 2.2em;
-  color: var(--primary-light); /* Highlight title */
+  font-size: 1.8em;
+  color: var(--primary-light);
+  font-weight: 700;
 }
 
 .site-header .header-title p {
-  font-size: 1em;
-  opacity: 0.8;
+  font-size: 0.9em;
+  opacity: 0.7;
+  margin-top: 0.25rem;
 }
 
 .site-header .header-controls {
   display: flex;
-  gap: 0.75rem; /* More space between buttons */
+  gap: 0.75rem;
   align-items: center;
 }
 
 .site-header .header-controls a,
 .site-header .header-controls button {
-  padding: 0.6rem 1rem; /* Slightly larger buttons */
-  border-radius: 0.375rem; /* Softer corners */
-  font-weight: 500;
-  transition: all 0.2s ease;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--border-radius-md);
+  font-weight: 600;
+  transition: var(--transition-fast);
   cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-header .header-controls a:focus-visible,
+.site-header .header-controls button:focus-visible {
+    outline: 2px solid var(--primary-light);
+    outline-offset: 2px;
 }
 
 .site-header .header-controls a {
   background: transparent;
-  border: none;
   color: var(--font-color);
-  font-size: 1.5rem; /* Larger icon */
+  font-size: 1.5rem;
+  padding: 0.5rem; /* Adjust padding for icon-only button */
 }
 
-.site-header .header-controls a:hover,
-.site-header .header-controls a:focus {
+.site-header .header-controls a:hover {
   color: var(--primary-light);
-  outline: none; /* Remove default focus outline */
-  box-shadow: 0 0 0 2px var(--primary-light); /* Add custom focus indicator */
+  background-color: rgba(167, 139, 250, 0.1);
 }
 
-/* Style for the login button when logged in */
+/* Login Button States */
 #loginBtn[logged-in="true"] {
-  display: none; /* Hide login button if logged in */
+  display: none;
 }
 
 #loginBtn[logged-in="false"] {
-  display: block; /* Show login button if not logged in */
+  display: inline-flex; /* Use flex for alignment */
 }
 
-/* Login Button */
-#loginBtn {
+/* Generic Button Styles */
+.btn {
+    border: none;
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--primary-darker);
+}
+
+/* Primary Button (Login) */
+.btn-primary {
   background-color: var(--primary);
-  color: white;
-  border: none;
 }
 
-#loginBtn:hover,
-#loginBtn:focus {
-  background: var(--primary-hover);
-  outline: none;
-  box-shadow: 0 0 0 2px var(--primary-hover);
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  box-shadow: var(--shadow-md);
 }
 
-/* Clean Memory Button */
-#cleanMemoryBtn {
-  background-color: var(--surface); /* Less prominent than login */
+.btn-primary:active:not(:disabled) {
+    background-color: var(--primary-active);
+}
+
+/* Secondary Button (Clean Memory) */
+.btn-secondary {
+  background-color: var(--surface);
   color: var(--font-color);
   border: 1px solid var(--primary-darker);
 }
 
-#cleanMemoryBtn:hover,
-#cleanMemoryBtn:focus {
-  background: var(--primary-darker);
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--primary-darker);
   border-color: var(--primary-light);
-  outline: none;
-  box-shadow: 0 0 0 2px var(--primary-light);
 }
-
 
 /* Main Content Area */
 main {
-  flex: 1; /* Allows main to grow and take up available space */
-  padding: 30px 20px;
-  max-width: 1200px; /* Limit content width */
-  margin: 20px auto; /* Center the content */
+  flex: 1;
+  padding: 2rem 1.5rem;
+  max-width: 1400px; /* Wider for large screens */
+  margin: 0 auto; /* Center with 0 top/bottom margin */
   width: 100%;
-  box-sizing: border-box; /* Include padding in the element's total width and height */
 }
 
-/* Recommendations Container */
+/* Recommendations Section */
 #recommendations-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 30px; /* Space between movie cards */
-  justify-content: center; /* Center items horizontally */
-  padding-top: 20px; /* Add some space above the cards */
+  flex-direction: column; /* Stack "because you watched" sections */
+  gap: 3rem; /* Increased space between sections */
 }
 
-/* Section for "Because you watched..." */
 .because-you-watched-container {
-  display: flex;
   width: 100%;
-  flex-direction: column;
-  gap: 20px; /* Space between sections */
-  margin-bottom: 40px;
-}
-
-.because-you-watched-container h2 {
-  color: var(--font-color);
-  font-size: 1.8em;
-  margin-bottom: 15px;
-  border-bottom: 2px solid #444;
-  padding-bottom: 10px;
-  text-align: center; /* Center the section title */
 }
 
 .because-you-watched-title {
-    font-size: 1.8em;
-    color: var(--font-color);
-    margin-bottom: 15px;
-    border-bottom: 2px solid #444;
-    padding-bottom: 10px;
-    text-align: center;
+  font-size: 1.6em;
+  font-weight: 600;
+  color: var(--font-color);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--primary-dark);
 }
 
 .movie-link {
   text-decoration: none;
-  color: var(--primary-light); /* Highlight the movie link */
-  font-weight: bold;
-  margin-left: 10px; /* Space between "Because you watched" and movie title */
+  color: var(--primary-light);
+  font-weight: 700;
 }
 
 .movie-link:hover {
   text-decoration: underline;
+  text-decoration-color: var(--primary);
 }
 
-/* Grid for movie cards */
+/* Movie Grid */
 .movie-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Responsive grid */
-  gap: 25px; /* Space between movie cards */
-  justify-items: center; /* Center items within their grid cells */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
 }
 
-/* Individual Movie Card */
+/* Movie Card */
 .movie-card {
-  background-color: var(--surface); /* Use root variable */
-  border-radius: 10px;
-  overflow: hidden; /* Crucial for images to stay within rounded corners */
-  box-shadow: var(--shadow-lg); /* Use root variable */
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: var(--surface);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  transition: transform var(--transition-medium), box-shadow var(--transition-medium);
   display: flex;
-  flex-direction: column; /* Stack elements vertically */
-  justify-content: space-between; /* Push content to top and bottom if card height varies */
-  min-height: 350px; /* Give cards a minimum height */
-  width: 100%; /* Make card fill its grid cell */
-  max-width: 200px; /* Consistent card width */
+  flex-direction: column;
+  width: 100%;
   cursor: pointer;
-  position: relative; /* For potential absolute positioning inside */
+  position: relative;
 }
 
 .movie-card:hover {
-  transform: translateY(-5px); /* Lift the card slightly */
-  box-shadow: var(--shadow-xl); /* Enhanced shadow on hover */
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: var(--shadow-xl);
 }
 
 .movie-card img {
   width: 100%;
-  height: 280px; /* Fixed height for covers */
-  object-fit: cover; /* Ensures image covers the area without distortion */
-  display: block; /* Remove extra space below image */
-  border-bottom: 1px solid #444; /* Separator for image and text */
+  height: 270px; /* Adjusted height */
+  object-fit: cover;
+  display: block;
+  border-bottom: 3px solid var(--primary); /* Accent border */
 }
 
 .movie-info {
-  padding: 15px;
+  padding: 1rem;
   text-align: center;
-  flex-grow: 1; /* Allows info section to grow to fill remaining space */
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Center content vertically within info area */
-  background-color: var(--background); /* Slightly darker background for info */
-  border-radius: 0 0 10px 10px; /* Match card's bottom radius */
+  justify-content: center;
+  min-height: 90px; /* Ensure a minimum height for text content */
 }
 
 .movie-info h3 {
-  margin: 0 0 10px 0;
-  font-size: 1.1em;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.05em;
   color: var(--font-color);
-  white-space: nowrap; /* Prevent title from wrapping */
-  overflow: hidden; /* Hide overflow */
-  text-overflow: ellipsis; /* Add ellipsis for overflow */
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .movie-info .rating,
 .movie-info .year {
-  font-size: 0.9em;
-  color: #aaa;
-  margin-bottom: 5px;
+  font-size: 0.85em;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
 }
 
-.movie-info .year {
-  margin-bottom: 0; /* No extra space below year */
-}
-
-/* Loading and No Results Messages */
+/* Status Messages */
 .loading-message,
 .no-results-message {
-  grid-column: 1 / -1; /* Span across all columns */
+  grid-column: 1 / -1;
   text-align: center;
-  padding: 50px;
-  font-size: 1.2em;
-  color: #bbb;
-  width: 100%; /* Ensure it takes full width */
+  padding: 4rem;
+  font-size: 1.25em;
+  color: rgba(255, 255, 255, 0.7);
+  width: 100%;
 }
 
-/* Floating Window Styles (Login Box) */
+/* Floating Window (Modal) */
 .floatWindow {
-  position: absolute;
+  position: fixed; /* Use fixed for viewport positioning */
   background: var(--surface);
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-xl);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  z-index: 1001; /* Above header */
-  min-width: 300px;
-  overflow: hidden;
-  resize: both;
-  min-height: 300px;
-  max-width: 90vw;
+  z-index: 1001;
+  min-width: 320px;
+  max-width: 500px;
+  width: 90vw;
   max-height: 90vh;
-  /* Positioned by JS, so no fixed top/left here */
+  overflow: hidden;
+  border: 1px solid var(--primary-dark);
+  /* Centered by default, can be overridden by JS */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .floatWindow .windowBar {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: var(--primary);
+  background: var(--primary-dark);
   color: var(--font-color);
   display: flex;
   justify-content: space-between;
@@ -313,38 +333,36 @@ main {
 
 .floatWindow .windowBar h2 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
 }
 
 .floatWindow .windowBar .closeBtn {
-  font-size: 1.5rem; /* Larger close button */
+  font-size: 1.5rem;
   background: transparent;
   border: none;
   color: var(--font-color);
   cursor: pointer;
-  padding: 0 0.5rem;
-  margin-left: 0.5rem;
-  transition: color 0.2s ease;
+  padding: 0.25rem;
+  border-radius: 50%;
+  transition: var(--transition-fast);
 }
 
-.floatWindow .windowBar .closeBtn:hover,
-.floatWindow .windowBar .closeBtn:focus {
-  color: #f87171; /* Red on hover */
-  outline: none;
-  box-shadow: 0 0 0 2px #f87171;
+.floatWindow .windowBar .closeBtn:hover {
+  color: var(--danger);
+  background-color: rgba(244, 63, 94, 0.1);
 }
 
 .floatWindow .content {
-  padding: 1.5rem; /* More padding inside */
+  padding: 1.5rem;
   flex-grow: 1;
-  overflow: auto;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 1rem; /* Space between form elements */
+  gap: 1.25rem;
 }
 
-.floatWindow .content .form-group {
+.floatWindow .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -359,141 +377,117 @@ main {
 .floatWindow input[type="text"],
 .floatWindow input[type="password"] {
   padding: 0.75rem 1rem;
-  border: 1px solid var(--surface);
-  border-radius: 0.375rem;
+  border: 1px solid var(--primary-darker);
+  border-radius: var(--border-radius-md);
   background: var(--background);
   color: var(--font-color);
-  transition: all 0.2s ease;
+  transition: var(--transition-fast);
   width: 100%;
+  font-size: 1rem;
 }
 
 .floatWindow input:focus {
   outline: none;
   border-color: var(--primary-light);
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3);
 }
 
-/* Error Message Styling */
+/* Error Message */
 .error-message {
-  color: #f87171; /* Red */
-  background-color: rgba(248, 113, 115, 0.1); /* Light red background */
-  padding: 12px 16px;
-  border-radius: 4px;
-  border: 1px solid #f87171;
-  margin-top: 10px;
-  font-size: 0.875rem;
+  color: var(--danger);
+  background-color: rgba(244, 63, 94, 0.1);
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--danger);
+  font-size: 0.9rem;
   width: 100%;
-  box-sizing: border-box;
   animation: fadeIn 0.3s ease-in-out;
   position: relative;
-  padding-left: 40px;
+  display: flex;
+  align-items: center;
 }
 
-.error-message:before {
-  content: "!"; /* Simple error indicator */
+.error-message::before {
+  content: "⚠️"; /* Using emoji for indicator */
   position: absolute;
-  left: 16px;
-  top: 9px;
-  font-size: 18px;
-  font-weight: bold;
-  color: #f87171;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
+  from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Removed unused styles related to #app, #leftSide, #rightSide, .slots, .slot */
-/* These were likely remnants from other projects or planned features not yet implemented. */
 
-/* Footer - Keep if needed, but it's not in the provided HTML */
-/* footer {
-  background-color: var(--surface);
-  color: var(--font-color);
-  text-align: center;
-  padding: 20px 0;
-  margin-top: auto;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
-} */
-
-/* Responsive adjustments */
+/* Responsive Adjustments */
 @media (max-width: 768px) {
   .site-header {
     flex-direction: column;
-    gap: 10px;
+    gap: 1rem;
+    padding: 1rem;
   }
-  .site-header .header-title {
-    text-align: center;
-  }
+
   .site-header .header-controls {
     width: 100%;
     justify-content: center;
   }
+
   main {
-    padding: 20px 10px;
+    padding: 1.5rem 1rem;
   }
+
   .movie-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 20px;
-  }
-  .movie-card {
-    max-width: 160px;
-    min-height: 300px;
-  }
-  .movie-card img {
-    height: 240px;
-  }
-  .movie-info h3 {
-    font-size: 1em;
-  }
-  .because-you-watched-container h2 {
-      font-size: 1.5em;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .site-header h1 {
-    font-size: 1.8em;
+  body {
+    padding-top: 8rem; /* More space for wrapped header */
   }
-  .site-header p {
-    font-size: 0.9em;
+
+  .site-header .header-title h1 {
+    font-size: 1.5em;
   }
+
   .site-header .header-controls a,
   .site-header .header-controls button {
-      padding: 0.5rem 0.8rem;
+      padding: 0.6rem 1rem;
       font-size: 0.9rem;
   }
-  .site-header .header-controls a {
-      font-size: 1.2rem;
-  }
+
   main {
-    padding: 15px 5px;
+    padding: 1rem 0.5rem;
   }
+
   #recommendations-container {
-    gap: 15px;
+      gap: 2rem;
   }
+  
+  .because-you-watched-title {
+      font-size: 1.3em;
+  }
+
   .movie-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 15px;
+    /* Two columns on the smallest screens */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
   }
-  .movie-card {
-    max-width: 140px;
-    min-height: 260px;
-  }
+
   .movie-card img {
-    height: 200px;
+    height: 220px;
   }
+  
   .movie-info {
-    padding: 10px;
+    padding: 0.75rem;
+    min-height: 80px;
   }
+
   .movie-info h3 {
     font-size: 0.9em;
-  }
-  .movie-info .rating, .movie-info .year {
-    font-size: 0.8em;
-  }
-   .because-you-watched-container h2 {
-      font-size: 1.3em;
   }
 }
