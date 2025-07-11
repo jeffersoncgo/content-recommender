@@ -271,7 +271,7 @@ const getList = async (Library, PlayStatus) => {
       return []; // Return empty array if Jellyfin is not ready
   }
 
-  window.jellyfin.searchParams.Library = Library || 'Filmes'; // Default to 'Filmes'
+  // window.jellyfin.searchParams.Library = Library || 'Filmes'; // Default to 'Filmes'
   window.jellyfin.searchParams.page = 1;
   window.jellyfin.searchParams.offset = 0;
   window.jellyfin.searchParams.limit = 999999; // Fetch all items
