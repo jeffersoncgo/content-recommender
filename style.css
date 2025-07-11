@@ -1,260 +1,4 @@
-/* Basic Reset & Body Styles */
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 0;
-  background-color: #1a1a1a;
-  /* Dark background */
-  color: #e0e0e0;
-  /* Light text */
-  line-height: 1.6;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  /* Ensure it takes at least full viewport height */
-}
-
-header {
-  background-color: #333;
-  color: #fff;
-  padding: 20px 0;
-  text-align: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-header h1 {
-  margin: 0;
-  font-size: 2.5em;
-}
-
-header p {
-  font-size: 1.2em;
-  opacity: 0.9;
-}
-
-main {
-  flex: 1;
-  /* Allows main to grow and take up available space */
-  padding: 30px 20px;
-  max-width: 1200px;
-  /* Limit content width */
-  margin: 20px auto;
-  /* Center the content */
-  width: 100%;
-  box-sizing: border-box;
-  /* Include padding in the element's total width and height */
-}
-
-#recommendations-container {
-  display: flex;
-  flex-wrap: wrap;
-  max-width: 80vw;
-  gap: 30px;
-  /* Space between movie cards */
-  justify-items: center;
-  /* Center items within their grid cells */
-}
-
-.because-you-watched-container {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  gap: 20px;
-  /* Space between sections */
-  margin-bottom: 40px;
-}
-
-.because-you-watched-container h2 {
-  color: #fff;
-  font-size: 1.8em;
-  margin-bottom: 15px;
-  border-bottom: 2px solid #444;
-  padding-bottom: 10px;
-}
-
-.movie-link {
-  text-decoration: none;
-  color: inherit;
-  /* Inherit text color from parent */
-  display: inline;
-  font-weight: bold;
-}
-
-.movie-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  /* Responsive grid */
-  gap: 20px;
-  /* Space between movie cards */
-  justify-items: center;
-  /* Center items within their grid cells */
-}
-
-.movie-card {
-  background-color: #2a2a2a;
-  border-radius: 10px;
-  overflow: hidden;
-  /* Crucial for images to stay within rounded corners */
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  /* Stack elements vertically */
-  justify-content: space-between;
-  /* Push content to top and bottom if card height varies */
-  min-height: 350px;
-  /* Give cards a minimum height to look consistent */
-  width: 100%;
-  /* Make card fill its grid cell */
-  max-width: 220px;
-  /* Max width for individual cards */
-  cursor: pointer;
-}
-
-.movie-card:hover {
-  transform: translateY(-5px);
-  /* Lift the card slightly */
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-}
-
-.movie-card img {
-  width: 100%;
-  height: 280px;
-  /* Fixed height for covers, adjust as needed */
-  object-fit: cover;
-  /* Ensures image covers the area without distortion */
-  display: block;
-  /* Remove extra space below image */
-  border-bottom: 1px solid #444;
-  /* Separator for image and text */
-}
-
-.movie-info {
-  padding: 15px;
-  text-align: center;
-  flex-grow: 1;
-  /* Allows info section to grow to fill remaining space */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  /* Center content vertically within info area */
-}
-
-.movie-info h3 {
-  margin: 0 0 10px 0;
-  font-size: 1.1em;
-  color: #fff;
-  white-space: nowrap;
-  /* Prevent title from wrapping */
-  overflow: hidden;
-  /* Hide overflow */
-  text-overflow: ellipsis;
-  /* Add ellipsis for overflow */
-}
-
-.movie-info .rating {
-  font-size: 0.9em;
-  color: #aaa;
-  margin-bottom: 5px;
-}
-
-.movie-info .year {
-  font-size: 0.9em;
-  color: #aaa;
-  margin-bottom: 0;
-  /* No extra space below year */
-}
-
-.loading-message,
-.no-results-message {
-  grid-column: 1 / -1;
-  /* Span across all columns */
-  text-align: center;
-  padding: 50px;
-  font-size: 1.2em;
-  color: #bbb;
-}
-
-footer {
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  padding: 20px 0;
-  margin-top: auto;
-  /* Pushes footer to the bottom */
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
-}
-
-footer p {
-  margin: 0;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  header h1 {
-    font-size: 2em;
-  }
-
-  #recommendations-container {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 20px;
-  }
-
-  .movie-card {
-    min-height: 300px;
-    max-width: 180px;
-  }
-
-  .movie-card img {
-    height: 240px;
-  }
-
-  .movie-info h3 {
-    font-size: 1em;
-  }
-}
-
-@media (max-width: 480px) {
-  header h1 {
-    font-size: 1.8em;
-  }
-
-  header p {
-    font-size: 1em;
-  }
-
-  main {
-    padding: 20px 10px;
-  }
-
-  #recommendations-container {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
-  }
-
-  .movie-card {
-    min-height: 260px;
-    max-width: 150px;
-  }
-
-  .movie-card img {
-    height: 200px;
-  }
-
-  .movie-info {
-    padding: 10px;
-  }
-
-  .movie-info h3 {
-    font-size: 0.9em;
-  }
-
-  .movie-info .rating,
-  .movie-info .year {
-    font-size: 0.8em;
-  }
-}
-
-
+/* :root variables are kept from the original for consistency in styling */
 :root {
   /* Font Params */
   --font: 'Segoe UI', system-ui, sans-serif;
@@ -285,6 +29,7 @@ footer p {
   --slotHeight: 300px;
 }
 
+/* Basic Reset & Body Styles */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -297,64 +42,245 @@ body {
   color: var(--font-color);
   min-height: 100vh;
   padding: 0.5rem;
-  padding-top: 5rem;
+  padding-top: 5rem; /* Space for the fixed header */
+  display: flex;
+  flex-direction: column;
 }
 
-h2 {
-  color: var(--font-color);
-  margin-bottom: 1.5rem;
-}
-
-
-input,
-select {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--surface);
-  border-radius: 0.375rem;
-  background: var(--background);
-  color: var(--font-color);
-  transition: all 0.2s ease;
+/* Header Styles */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
+  background: var(--surface);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between; /* Pushes title and controls to opposite ends */
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 100; /* Ensure header is above other content */
+  box-shadow: var(--shadow-md);
 }
 
-
-input:focus,
-select:focus {
-  outline: none;
-  border-color: var(--primary-light);
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+.site-header .header-title h1 {
+  margin: 0;
+  font-size: 2.2em;
+  color: var(--primary-light); /* Highlight title */
 }
 
-button {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
+.site-header .header-title p {
+  font-size: 1em;
+  opacity: 0.8;
+}
+
+.site-header .header-controls {
+  display: flex;
+  gap: 0.75rem; /* More space between buttons */
+  align-items: center;
+}
+
+.site-header .header-controls a,
+.site-header .header-controls button {
+  padding: 0.6rem 1rem; /* Slightly larger buttons */
+  border-radius: 0.375rem; /* Softer corners */
   font-weight: 500;
   transition: all 0.2s ease;
-  width: 100%;
+  cursor: pointer;
 }
 
-button:hover {
+.site-header .header-controls a {
+  background: transparent;
+  border: none;
+  color: var(--font-color);
+  font-size: 1.5rem; /* Larger icon */
+}
+
+.site-header .header-controls a:hover,
+.site-header .header-controls a:focus {
+  color: var(--primary-light);
+  outline: none; /* Remove default focus outline */
+  box-shadow: 0 0 0 2px var(--primary-light); /* Add custom focus indicator */
+}
+
+/* Style for the login button when logged in */
+#loginBtn[logged-in="true"] {
+  display: none; /* Hide login button if logged in */
+}
+
+#loginBtn[logged-in="false"] {
+  display: block; /* Show login button if not logged in */
+}
+
+/* Login Button */
+#loginBtn {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+}
+
+#loginBtn:hover,
+#loginBtn:focus {
   background: var(--primary-hover);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-hover);
 }
 
-button:active {
-  background: var(--primary-active);
+/* Clean Memory Button */
+#cleanMemoryBtn {
+  background-color: var(--surface); /* Less prominent than login */
+  color: var(--font-color);
+  border: 1px solid var(--primary-darker);
 }
 
-i[disabled="true"],
-button[disabled="true"] {
-  opacity: 0.5;
-  cursor: not-allowed;
-  user-select: none;
-  background-color: var(--background);
+#cleanMemoryBtn:hover,
+#cleanMemoryBtn:focus {
+  background: var(--primary-darker);
+  border-color: var(--primary-light);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-light);
 }
 
 
-/* Floating Window Styles */
+/* Main Content Area */
+main {
+  flex: 1; /* Allows main to grow and take up available space */
+  padding: 30px 20px;
+  max-width: 1200px; /* Limit content width */
+  margin: 20px auto; /* Center the content */
+  width: 100%;
+  box-sizing: border-box; /* Include padding in the element's total width and height */
+}
+
+/* Recommendations Container */
+#recommendations-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px; /* Space between movie cards */
+  justify-content: center; /* Center items horizontally */
+  padding-top: 20px; /* Add some space above the cards */
+}
+
+/* Section for "Because you watched..." */
+.because-you-watched-container {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 20px; /* Space between sections */
+  margin-bottom: 40px;
+}
+
+.because-you-watched-container h2 {
+  color: var(--font-color);
+  font-size: 1.8em;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #444;
+  padding-bottom: 10px;
+  text-align: center; /* Center the section title */
+}
+
+.because-you-watched-title {
+    font-size: 1.8em;
+    color: var(--font-color);
+    margin-bottom: 15px;
+    border-bottom: 2px solid #444;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+.movie-link {
+  text-decoration: none;
+  color: var(--primary-light); /* Highlight the movie link */
+  font-weight: bold;
+  margin-left: 10px; /* Space between "Because you watched" and movie title */
+}
+
+.movie-link:hover {
+  text-decoration: underline;
+}
+
+/* Grid for movie cards */
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Responsive grid */
+  gap: 25px; /* Space between movie cards */
+  justify-items: center; /* Center items within their grid cells */
+}
+
+/* Individual Movie Card */
+.movie-card {
+  background-color: var(--surface); /* Use root variable */
+  border-radius: 10px;
+  overflow: hidden; /* Crucial for images to stay within rounded corners */
+  box-shadow: var(--shadow-lg); /* Use root variable */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column; /* Stack elements vertically */
+  justify-content: space-between; /* Push content to top and bottom if card height varies */
+  min-height: 350px; /* Give cards a minimum height */
+  width: 100%; /* Make card fill its grid cell */
+  max-width: 200px; /* Consistent card width */
+  cursor: pointer;
+  position: relative; /* For potential absolute positioning inside */
+}
+
+.movie-card:hover {
+  transform: translateY(-5px); /* Lift the card slightly */
+  box-shadow: var(--shadow-xl); /* Enhanced shadow on hover */
+}
+
+.movie-card img {
+  width: 100%;
+  height: 280px; /* Fixed height for covers */
+  object-fit: cover; /* Ensures image covers the area without distortion */
+  display: block; /* Remove extra space below image */
+  border-bottom: 1px solid #444; /* Separator for image and text */
+}
+
+.movie-info {
+  padding: 15px;
+  text-align: center;
+  flex-grow: 1; /* Allows info section to grow to fill remaining space */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center content vertically within info area */
+  background-color: var(--background); /* Slightly darker background for info */
+  border-radius: 0 0 10px 10px; /* Match card's bottom radius */
+}
+
+.movie-info h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.1em;
+  color: var(--font-color);
+  white-space: nowrap; /* Prevent title from wrapping */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Add ellipsis for overflow */
+  font-weight: 600;
+}
+
+.movie-info .rating,
+.movie-info .year {
+  font-size: 0.9em;
+  color: #aaa;
+  margin-bottom: 5px;
+}
+
+.movie-info .year {
+  margin-bottom: 0; /* No extra space below year */
+}
+
+/* Loading and No Results Messages */
+.loading-message,
+.no-results-message {
+  grid-column: 1 / -1; /* Span across all columns */
+  text-align: center;
+  padding: 50px;
+  font-size: 1.2em;
+  color: #bbb;
+  width: 100%; /* Ensure it takes full width */
+}
+
+/* Floating Window Styles (Login Box) */
 .floatWindow {
   position: absolute;
   background: var(--surface);
@@ -363,14 +289,14 @@ button[disabled="true"] {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  z-index: 1000;
+  z-index: 1001; /* Above header */
   min-width: 300px;
   overflow: hidden;
   resize: both;
   min-height: 300px;
-  min-width: 300px;
   max-width: 90vw;
   max-height: 90vh;
+  /* Positioned by JS, so no fixed top/left here */
 }
 
 .floatWindow .windowBar {
@@ -392,600 +318,182 @@ button[disabled="true"] {
 }
 
 .floatWindow .windowBar .closeBtn {
-  font-size: 1.25rem;
+  font-size: 1.5rem; /* Larger close button */
   background: transparent;
   border: none;
   color: var(--font-color);
   cursor: pointer;
   padding: 0 0.5rem;
   margin-left: 0.5rem;
+  transition: color 0.2s ease;
 }
 
-.floatWindow .windowBar .closeBtn:hover {
-  color: #f87171;
+.floatWindow .windowBar .closeBtn:hover,
+.floatWindow .windowBar .closeBtn:focus {
+  color: #f87171; /* Red on hover */
+  outline: none;
+  box-shadow: 0 0 0 2px #f87171;
 }
 
 .floatWindow .content {
-  padding: 1rem;
+  padding: 1.5rem; /* More padding inside */
   flex-grow: 1;
   overflow: auto;
-}
-
-/* Top Bar Layoult */
-.header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: var(--surface);
-  padding: 1rem;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 1;
+  flex-direction: column;
+  gap: 1rem; /* Space between form elements */
 }
 
-#loginBtn[logged-in="true"] {
-  display: none;
-}
-
-#loginBtn[logged-in="false"] {
-  display: block;
-}
-
-#loginAction {
-  display: block;
-}
-
-.buttons {
+.floatWindow .content .form-group {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
-  align-items: center;
-  justify-content: center;
-  margin-right: 0.5rem;
-  margin-left: 0.5rem;
-  cursor: pointer;
-  user-select: none;
-  transition: color 0.2s ease;
 }
 
-.buttons .fa-brands {
-  font-size: 2.5rem;
-  color: var(--font-color);
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.buttons .fa-brands:hover {
-  color: var(--primary-light);
-}
-
-#loginForm {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-#loginForm .field {
-  display: flex;
-  flex-direction: column;
-}
-
-#loginForm label {
-  margin-bottom: 0.5rem;
-}
-
-#loginForm input {
-  margin-bottom: 0;
-}
-
-#loginForm button {
-  margin-top: 1rem;
-}
-
-#loginAction[inactive="true"] {
-  pointer-events: none;
-  opacity: 0.5;
-  cursor: not-allowed;
-  user-select: none;
-  background-color: var(--background);
-}
-
-#loginErrorMessage {
-  /* Basic styling */
-  color: #d32f2f;
-  /* Red color for errors */
-  background-color: #fde8e8;
-  /* Light red background */
-  padding: 12px 16px;
-  border-radius: 4px;
-  border: 1px solid #ef9a9a;
-  margin: 10px 0;
-  font-size: 14px;
-
-  /* Layout */
-  width: 100%;
-  box-sizing: border-box;
-
-  /* Animation */
-  animation: fadeIn 0.3s ease-in-out;
-
-  /* Icon (optional) */
-  position: relative;
-  padding-left: 40px;
-}
-
-#loginErrorMessage:before {
-  /* Error icon (using UTF-8) */
-  content: "⚠";
-  position: absolute;
-  left: 16px;
-  top: 9px;
-  font-size: 18px;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-}
-
-#loginAction[inactive="true"] {
-  pointer-events: none;
-  opacity: 0.5;
-  cursor: not-allowed;
-  user-select: none;
-  background-color: var(--background);
-}
-
-#loginErrorMessage {
-  /* Basic styling */
-  color: #d32f2f;
-  /* Red color for errors */
-  background-color: #fde8e8;
-  /* Light red background */
-  padding: 12px 16px;
-  border-radius: 4px;
-  border: 1px solid #ef9a9a;
-  margin: 10px 0;
-  font-size: 14px;
-
-  /* Layout */
-  width: 100%;
-  box-sizing: border-box;
-
-  /* Animation */
-  animation: fadeIn 0.3s ease-in-out;
-
-  /* Icon (optional) */
-  position: relative;
-  padding-left: 40px;
-}
-
-#loginErrorMessage:before {
-  /* Error icon (using UTF-8) */
-  content: "⚠";
-  position: absolute;
-  left: 16px;
-  top: 9px;
-  font-size: 18px;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Main App Layout */
-#app {
-  display: flex;
-  gap: 0.5rem;
-  height: calc(100vh - 4rem);
-}
-
-#leftSide,
-#rightSide {
-  width: 60vw;
-  min-width: 270px;
-  max-height: calc(100vh - 5.3rem);
-  background: var(--surface);
-  border-radius: 0.5rem;
-  box-shadow: var(--shadow-md);
-  overflow: hidden;
-}
-
-#leftSide #tabsList {
-  display: flex;
-  justify-content: stretch;
-  flex-direction: row;
-  border-bottom: 1px solid var(--primary-darker);
-}
-
-#leftSide #tabsList li {
-  position: relative;
-  flex-grow: 1;
-  display: flex;
-  list-style: none;
-  padding: 0.2rem 1rem;
-  text-align: center;
-  align-items: center;
-  cursor: pointer;
-  background-color: var(--primary-darker);
-}
-
-#leftSide #tabsList li.active {
-  background-color: var(--primary-active);
-}
-
-#leftSide #tabsList li:hover {
-  background-color: var(--primary-hover);
-}
-
-.controls {
-  position: relative;
-  display: flex;
-  top: -4px;
-  width: calc(100%);
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 0.2rem;
-  margin-bottom: 0.1rem;
-  padding: 5px;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-  font-size: 4fr;
-  z-index: 1;
-  background-color: var(--background);
-}
-
-.controls i {
-  background: var(--primary);
-  font-size: var(--font-size);
-  color: var(--font-color);
-  padding: 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  height: 25px;
-  width: 25px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.controls input,
-.controls i {
-  margin-right: 0.25rem;
-  margin-left: 0;
-}
-
-.controls i:hover {
-  background: var(--primary-hover);
-}
-
-.tabContent {
-  display: none;
-}
-
-.tabContent.active {
-  display: block;
-}
-
-
-#canvas-container {
-  position: relative;
-  width: 100%;
-  max-height: calc(100vh - 5.3rem);
-  height: calc(100vh - 5.3rem);
-  width: calc(100vw - 2rem);
-  background: var(--surface);
-  border-radius: 0.5rem;
-  box-shadow: var(--shadow-md);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-}
-
-#myCanvas {
-  position: relative;
-  margin-top: 0.5rem;
-  max-height: 88%;
-  max-width: 100%;
-  aspect-ratio: 16/9;
-  object-fit: contain;
-  background: var(--background);
-  border-radius: 3rem;
-}
-
-#exportBtns {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  margin-top: 1rem;
-  align-items: center;
-  width: 100%;
-  padding: 0.5rem 1rem;
-  background: var(--surface);
-  border-radius: 0.5rem;
-  box-shadow: var(--shadow-md);
-  z-index: 1;
-  gap: 1rem;
-}
-
-#exportBtn button {
-  flex: 1;
-}
-
-.scroll-container {
-  position: relative;
-  width: 100%;
-  height: calc(100vh - 10.0rem);
-  padding-bottom: 1rem;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-.scroll-container::-webkit-scrollbar {
-  width: 0.5rem;
-}
-
-.scroll-container::-webkit-scrollbar-thumb {
-  background-color: var(--primary-light);
-  border-radius: 0.5rem;
-}
-
-.scroll-container::-webkit-scrollbar-track {
-  background: var(--surface);
-}
-
-#app .preview {
-  /* ALL IMAGE PREVIEW ARE HANDLED BY THIS*/
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  object-fit: cover;
-  /* Keep image scaled inside bounds */
-  cursor: pointer;
-}
-
-#app .preview:hover {
-  transform: scale(1.05);
-}
-
-#app .preview[src=""] {
-  display: none;
-}
-
-.slots {
-  padding: 0.5rem;
-  padding-top: 0.2rem;
-  border-radius: 0.5rem;
-}
-
-.slot {
-  width: var(--slotWidth);
-  height: var(--slotHeight);
-  position: relative;
-  aspect-ratio: 9/16;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
-  border: 2px dashed rgba(255, 255, 255, 0.1);
-  overflow: hidden;
-  margin-right: 0.3rem;
-}
-
-.slot:hover {
-  border-color: var(--primary-light);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.slot.dragover {
-  border-color: #007bff;
-  background: #e9f5ff;
-}
-
-
-.slot label {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: rgba(255, 255, 255, 0.6);
-  font-weight: 500;
-  text-align: center;
-  pointer-events: none;
-}
-
-.slot input[type="file"] {
-  opacity: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-
-.slot .bottomButtons,
-.slot .topButtons {
-  position: absolute;
-  opacity: 0;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 0 0 0.5rem 0.5rem;
-  transition: all 0.3s ease;
-}
-
-.slot .topButtons {
-  top: 0;
-  bottom: auto;
-  z-index: 10;
-}
-
-.slot:hover>.bottomButtons,
-.slot:hover>.topButtons {
-  opacity: 1;
-}
-
-.slot i {
-  background: transparent;
-  color: white;
-  font-size: 18px;
-  border: none;
-  padding: 0.1rem 0.5rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: all 0.1s ease;
-}
-
-.slot i:hover {
-  color: var(--background);
-  scale: 1.1;
-}
-
-.searchInputDiv {
-  position: relative;
-  display: flex;
-}
-
-#searchInput {
-  -webkit-appearance: none;
-  appearance: none;
-  background: none;
-  border: 1px solid #aaa;
-  padding: 0.5rem;
-  font-size: 1rem;
-  width: 100%;
-  padding-right: 1.8rem;
-}
-
-#searchInput::-webkit-calendar-picker-indicator {
-  display: none !important;
-}
-
-#clearSearchInput {
-  position: absolute;
-  right: 5px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--font-color);
-  cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-}
-
-#clearSearchInput:hover {
-  color: var(--primary-light);
-}
-
-#clearSearchInput[hidden] {
-  display: none;
-}
-
-#jellyfinContent .library,
-#jellyfinContent .cover {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  position: relative;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
-  border: 2px dashed rgba(255, 255, 255, 0.1);
-  overflow: hidden;
-  margin-right: 0.3rem;
-  margin-left: 0.3rem;
-}
-
-#jellyfinContent .library {
-  width: var(--bannerWidth);
-  height: var(--bannerHeight);
-  aspect-ratio: 16/9;
-}
-
-#jellyfinContent .cover {
-  width: var(--coverWidth);
-  height: var(--coverHeight);
-  aspect-ratio: 9/16;
-}
-
-#jellyfinContent .library:hover,
-#jellyfinContent .cover:hover {
-  border-color: var(--primary-light);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-#coverslimit {
-  width: 6rem;
-  margin-left: 0.2em;
-  margin-right: 0.4em;
-}
-
-/* Settings Grid */
-.settings {
-  padding: 1rem;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  margin: 1.5rem 0;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.field label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-/* Form elements in float window */
 .floatWindow label {
   color: rgba(255, 255, 255, 0.8);
-  font-size: 0.875rem;
-  margin-bottom: 0.25rem;
-  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
-.floatWindow input {
-  margin-bottom: 0.5rem;
+.floatWindow input[type="text"],
+.floatWindow input[type="password"] {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--surface);
+  border-radius: 0.375rem;
+  background: var(--background);
+  color: var(--font-color);
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.floatWindow input:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+}
+
+/* Error Message Styling */
+.error-message {
+  color: #f87171; /* Red */
+  background-color: rgba(248, 113, 115, 0.1); /* Light red background */
+  padding: 12px 16px;
+  border-radius: 4px;
+  border: 1px solid #f87171;
+  margin-top: 10px;
+  font-size: 0.875rem;
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeIn 0.3s ease-in-out;
+  position: relative;
+  padding-left: 40px;
+}
+
+.error-message:before {
+  content: "!"; /* Simple error indicator */
+  position: absolute;
+  left: 16px;
+  top: 9px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #f87171;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Removed unused styles related to #app, #leftSide, #rightSide, .slots, .slot */
+/* These were likely remnants from other projects or planned features not yet implemented. */
+
+/* Footer - Keep if needed, but it's not in the provided HTML */
+/* footer {
+  background-color: var(--surface);
+  color: var(--font-color);
+  text-align: center;
+  padding: 20px 0;
+  margin-top: auto;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
+} */
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .site-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .site-header .header-title {
+    text-align: center;
+  }
+  .site-header .header-controls {
+    width: 100%;
+    justify-content: center;
+  }
+  main {
+    padding: 20px 10px;
+  }
+  .movie-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
+  }
+  .movie-card {
+    max-width: 160px;
+    min-height: 300px;
+  }
+  .movie-card img {
+    height: 240px;
+  }
+  .movie-info h3 {
+    font-size: 1em;
+  }
+  .because-you-watched-container h2 {
+      font-size: 1.5em;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-header h1 {
+    font-size: 1.8em;
+  }
+  .site-header p {
+    font-size: 0.9em;
+  }
+  .site-header .header-controls a,
+  .site-header .header-controls button {
+      padding: 0.5rem 0.8rem;
+      font-size: 0.9rem;
+  }
+  .site-header .header-controls a {
+      font-size: 1.2rem;
+  }
+  main {
+    padding: 15px 5px;
+  }
+  #recommendations-container {
+    gap: 15px;
+  }
+  .movie-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+  }
+  .movie-card {
+    max-width: 140px;
+    min-height: 260px;
+  }
+  .movie-card img {
+    height: 200px;
+  }
+  .movie-info {
+    padding: 10px;
+  }
+  .movie-info h3 {
+    font-size: 0.9em;
+  }
+  .movie-info .rating, .movie-info .year {
+    font-size: 0.8em;
+  }
+   .because-you-watched-container h2 {
+      font-size: 1.3em;
+  }
 }

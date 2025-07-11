@@ -11,37 +11,41 @@
 
 <body>
 
-  <div class="header">
-    <h1>Movie Recommender</h1>
-    <div class="buttons">
-      <a href="https://github.com/jeffersoncgo/movie-recommender" target="_blank"><i class="fa-brands fa-github"></i></a>
-      <button id="loginBtn" logged-in="false" onClick="showWindow('loginBox');">Login to Jellyfin</button>
-      <button id="cleanMemoryBtn">Clean Saved Memory</button>
-    </div>
-  </div>
-
-  <div class="floatWindow" id="loginBox" style="display: none;">
-    <div class="windowBar">
-      <h2>Jellyfin Login</h2>
-      <button class="closeBtn">×</button>
-    </div>
-    <div class="content">
-      <label for="Server">Server URL</label>
-      <input type="text" id="Server" placeholder="http://yourserver:8096" value="http://localhost:8096" save>
-      <label for="Username">Username</label>
-      <input type="text" id="Username" placeholder="Your username" value="admin" save>
-      <label for="Password">Password</label>
-      <input type="password" id="Password" placeholder="Your password" value="password" save>
-      <!-- connect Button, it just refresh the page, so the onLoad functions can start -->
-      <button id="loginAction">Connect</button>
-      <label id="loginErrorMessage"></label>
-    </div>
-  </div>
-
-    <header>
+  <header class="site-header">
+    <div class="header-title">
         <h1>Movie Recommender</h1>
         <p>Discover new movies based on your tastes!</p>
-    </header>
+    </div>
+    <div class="header-controls">
+      <a href="https://github.com/jeffersoncgo/movie-recommender" target="_blank" aria-label="GitHub Repository"><i class="fa-brands fa-github"></i></a>
+      <button id="loginBtn" logged-in="false" onclick="showWindow('loginBox');">Login to Jellyfin</button>
+      <button id="cleanMemoryBtn">Clean Saved Memory</button>
+    </div>
+  </header>
+
+  <div class="floatWindow" id="loginBox" style="display: none;" aria-modal="true" role="dialog">
+    <div class="windowBar">
+      <h2>Jellyfin Login</h2>
+      <button class="closeBtn" aria-label="Close Login Window">×</button>
+    </div>
+    <div class="content">
+      <div class="form-group">
+        <label for="Server">Server URL</label>
+        <input type="text" id="Server" placeholder="http://yourserver:8096" value="http://localhost:8096" save>
+      </div>
+      <div class="form-group">
+        <label for="Username">Username</label>
+        <input type="text" id="Username" placeholder="Your username" value="admin" save>
+      </div>
+      <div class="form-group">
+        <label for="Password">Password</label>
+        <input type="password" id="Password" placeholder="Your password" value="password" save>
+      </div>
+      <!-- connect Button, it just refresh the page, so the onLoad functions can start -->
+      <button id="loginAction">Connect</button>
+      <label id="loginErrorMessage" class="error-message" role="alert"></label>
+    </div>
+  </div>
 
     <main id="recommendations-container">
         <!-- Movie recommendations will be loaded here -->
@@ -50,6 +54,7 @@
         </div>
     </main>
 
+    <!-- Important: Scripts should bered to load after DOM is ready -->
     <script src="https://jeffersoncgo.github.io/cdn/js/common.js"></script>
     <script src="https://jeffersoncgo.github.io/cdn/js/base.js"></script>
     <script src="https://jeffersoncgo.github.io/cdn/js/object.js"></script>
@@ -58,9 +63,9 @@
     <script src="https://jeffersoncgo.github.io/cdn/js/pagememory.js"></script>
     <script src="https://jeffersoncgo.github.io/CoverMaker/js/windowsHandle.js"></script>
     <script src="https://jeffersoncgo.github.io/CoverMaker/js/jellyfin.js"></script>
-    <!-- <script src="jellyfin.js"></script> -->
-    <script src="findSimilar.js"></script>
-    <script src="script.js"></script>
+    <script src="findSimilar.js" defer></script>
+    <script src="script.js" defer></script>
+    <script src="script_infinity_scroll.js" defer></script>
 </body>
 
 </html>
