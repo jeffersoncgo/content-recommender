@@ -10,6 +10,7 @@ const WEIGHTS = {
   STUDIO: 1,
   TAG: 4,
   PRODUCTION_YEAR: 2,
+  NAME: 3, 
   // IS_FAVORITE_BONUS: 5,
 };
 
@@ -49,7 +50,13 @@ function buildRarityMap(allContents) {
   return { genreRarity, tagRarity };
 }
 
-
+function tokenizeName(name) {
+  return (name || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '') // remove punctuation
+    .split(/\s+/)
+    .filter(w => w.length > 1 && !['the', 'part', 'season', 'episode'].includes(w));
+}
 
 // --- REFINED: Helper Function to Calculate Similarity ---
 function calculateSimilarity(targetContent, currentContent, rarityProfile) {
@@ -75,29 +82,46 @@ function calculateSimilarity(targetContent, currentContent, rarityProfile) {
   // Genres
   const genresA = new Set((targetContent.Genres || []).map(g => g.toLowerCase()));
   const genresB = new Set((currentContent.Genres || []).map(g => g.toLowerCase()));
-  rawScore += jaccardRarityWeighted(genresA, genresB, rarityProfile.genreRarity, 4);
-  maxScore += 4;
+  rawScore += jaccardRarityWeighted(genresA, genresB, rarityProfile.genreRarity, WEIGHTS.GENRE);
+  maxScore += WEIGHTS.GENRE;
 
   // Tags
   const tagsA = new Set((targetContent.Tags || []).map(t => t.toLowerCase()));
   const tagsB = new Set((currentContent.Tags || []).map(t => t.toLowerCase()));
-  rawScore += jaccardRarityWeighted(tagsA, tagsB, rarityProfile.tagRarity, 2.5);
-  maxScore += 2.5;
+  rawScore += jaccardRarityWeighted(tagsA, tagsB, rarityProfile.tagRarity, WEIGHTS.TAG);
+  maxScore += WEIGHTS.TAG;
 
   // Community Rating (0–10 scale)
   if (targetContent.CommunityRating && currentContent.CommunityRating) {
     const diff = Math.abs(targetContent.CommunityRating - currentContent.CommunityRating);
     const ratingSim = Math.max(0, 1 - diff / 10);
-    rawScore += ratingSim * 3;
-    maxScore += 3;
+    rawScore += ratingSim * WEIGHTS.COMMUNITY_RATING;
+    maxScore += WEIGHTS.COMMUNITY_RATING;
   }
 
   // Production Year
   if (targetContent.ProductionYear && currentContent.ProductionYear) {
     const diff = Math.abs(targetContent.ProductionYear - currentContent.ProductionYear);
     const decay = Math.max(0, 1 - diff / MAX_YEAR_DIFF); // Use constant
-    rawScore += decay * 2;
-    maxScore += 2;
+    rawScore += decay * WEIGHTS.PRODUCTION_YEAR;
+    maxScore += WEIGHTS.PRODUCTION_YEAR;
+  }
+
+  // 🎯 NEW: Title Token Similarity
+  const nameA = new Set(tokenizeName(targetContent.Name));
+  const nameB = new Set(tokenizeName(currentContent.Name));
+  const nameIntersection = [...nameA].filter(w => nameB.has(w));
+  const nameScore = nameIntersection.length / (Math.max(nameA.size, nameB.size) || 1); // Avoid /0
+  rawScore += nameScore * WEIGHTS.NAME;
+  maxScore += WEIGHTS.NAME;
+
+  if (targetContent.Name && currentContent.Name) {
+    const normalizedA = targetContent.Name.toLowerCase();
+    const normalizedB = currentContent.Name.toLowerCase();
+    if (normalizedA.startsWith(normalizedB) || normalizedB.startsWith(normalizedA)) {
+      rawScore += 1.0; // extra boost
+      maxScore += 1.0;
+    }
   }
 
   return maxScore > 0 ? (rawScore / maxScore) * 100 : 0;

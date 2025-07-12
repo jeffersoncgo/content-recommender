@@ -9,6 +9,7 @@ const recommendationsContainer = document.getElementById('recommendations-contai
 
 let ContentsToCheck = 3;
 let similarsToShow = 6;
+const noImage = "https://placehold.co/200x280/808080/FFFFFF?text=No+Image"
 
 // Function to generate Jellyfin Content detail URL
 function makeContentUrl(id) {
@@ -56,17 +57,17 @@ function createContentCard(Content) {
   ContentCard.setAttribute('data-Content-id', Content.Id); // Useful for event listeners later
 
   // Use a fallback image if Content.ImageUrl is not provided or invalid
-  const imageUrl = Content.ImageUrl || "https://placehold.co/200x280/808080/FFFFFF?text=No+Image";
+  const imageUrl = Content.ImageUrl || noImage;
 
   ContentCard.innerHTML = `
-        <img src="${imageUrl}" alt="${Content.Name} cover">
-        <div class="Content-info">
-            <h3>${Content.Name}</h3>
-            <p class="rating">Score: ${Content.similarityScore !== undefined ? Content.similarityScore.toFixed(0) + '%' : 'N/A'}</p>
-            <p class="rating">Community Rating: ${Content.CommunityRating !== undefined ? Content.CommunityRating.toFixed(2) : 'N/A'}</p>
-            <p class="year">Year: ${Content.ProductionYear || 'N/A'}</p>
-        </div>
-    `;
+    <img src="${imageUrl}" alt="${Content.Name} cover" onerror="this.onerror=null; this.src='${noImage}';">
+  <div class="Content-info">
+      <h3>${Content.Name}</h3>
+      <p class="rating">Score: ${Content.similarityScore !== undefined ? Content.similarityScore.toFixed(0) + '%' : 'N/A'}</p>
+      <p class="rating">Community Rating: ${Content.CommunityRating !== undefined ? Content.CommunityRating.toFixed(2) : 'N/A'}</p>
+      <p class="year">Year: ${Content.ProductionYear || 'N/A'}</p>
+  </div>`;
+
 
   // Make the Content card clickable to open the Content details in Jellyfin
   ContentCard.addEventListener('click', () => {
