@@ -10,7 +10,8 @@ const WEIGHTS = {
   STUDIO: 1,
   TAG: 4,
   PRODUCTION_YEAR: 2,
-  NAME: 3, 
+  NAME: 3,
+  START_WITH: 6,
   // IS_FAVORITE_BONUS: 5,
 };
 
@@ -119,8 +120,8 @@ function calculateSimilarity(targetContent, currentContent, rarityProfile) {
     const normalizedA = targetContent.Name.toLowerCase();
     const normalizedB = currentContent.Name.toLowerCase();
     if (normalizedA.startsWith(normalizedB) || normalizedB.startsWith(normalizedA)) {
-      rawScore += 1.0; // extra boost
-      maxScore += 1.0;
+      rawScore += WEIGHTS.START_WITH; // extra boost
+      maxScore += WEIGHTS.START_WITH;
     }
   }
 
