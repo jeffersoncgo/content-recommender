@@ -3,7 +3,9 @@
 This project is a web application that leverages your Jellyfin server to recommend Contents based on your watch history and preferences. It analyzes your watched Contents and suggests similar, unwatched Contents, considering various factors like genre, ratings, actors, directors, and production year.
 
 ## Preview
-<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/d1300173-3d15-4ba4-8c78-c5b6bbe5633e" />
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/fb6805fb-eeb3-4bca-aa5e-cca3bf9f6f5e" />
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/48e71346-d39e-4f8e-8efd-2b24b42150ad" />
+
 
 
 ## Features
