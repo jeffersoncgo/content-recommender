@@ -108,16 +108,16 @@ function extractSearchProfileFromWatched(watchedContents) {
   if (Object.keys(tagFreq).length > 0) {
     profile.push({ operator: 'all', fields: ['Tags'], queries: top(tagFreq) });
   }
-  if (Object.keys(studioFreq).length > 0) {
-    profile.push({ operator: 'any', fields: ['Studios.Name'], queries: top(studioFreq) });
-  }
-  const directorWriterNames = [...top(directorFreq), ...top(writerFreq)];
-  if (directorWriterNames.length > 0) {
-    profile.push({ operator: 'any', fields: ['People.Name'], queries: directorWriterNames });
-  }
-  if (Object.keys(actorFreq).length > 0) {
-    profile.push({ operator: 'any', fields: ['People.Name'], queries: top(actorFreq) });
-  }
+  // if (Object.keys(studioFreq).length > 0) {
+  //   profile.push({ operator: 'any', fields: ['Studios.Name'], queries: top(studioFreq) });
+  // }
+  // const directorWriterNames = [...top(directorFreq), ...top(writerFreq)];
+  // if (directorWriterNames.length > 0) {
+  //   profile.push({ operator: 'any', fields: ['People.Name'], queries: directorWriterNames });
+  // }
+  // if (Object.keys(actorFreq).length > 0) {
+  //   profile.push({ operator: 'any', fields: ['People.Name'], queries: top(actorFreq) });
+  // }
   if (Object.keys(yearFreq).length > 0) {
     profile.push({ operator: 'between', fields: ['ProductionYear'], queries: [avgYear - 5, avgYear + 5] });
   }
