@@ -100,15 +100,31 @@ function extractSearchProfileFromWatched(watchedContents) {
   const avgRating = ratingStats.reduce((a, b) => a + b, 0) / (ratingStats.length || 1);
   const avgYear = Math.round(Object.entries(yearFreq).reduce((sum, [y, count]) => sum + (y * count), 0) / (Object.values(yearFreq).reduce((a, b) => a + b, 0) || 1));
 
-  return [
-    { operator: 'all', fields: ['Genres'], queries: top(genreFreq) },
-    { operator: 'all', fields: ['Tags'], queries: top(tagFreq) },
-    { operator: 'any', fields: ['Studios.Name'], queries: top(studioFreq) },
-    { operator: 'any', fields: ['People.Name'], queries: [...top(directorFreq), ...top(writerFreq)] },
-    { operator: 'any', fields: ['People.Name'], queries: top(actorFreq) },
-    { operator: 'between', fields: ['ProductionYear'], queries: [avgYear - 5, avgYear + 5] },
-    { operator: '>', fields: ['CommunityRating'], queries: [Math.max(avgRating - 0.5, 6.0)] }
-  ];
+  const profile = [];
+    
+  if (Object.keys(genreFreq).length > 0) {
+    profile.push({ operator: 'all', fields: ['Genres'], queries: top(genreFreq) });
+  }
+  if (Object.keys(tagFreq).length > 0) {
+    profile.push({ operator: 'all', fields: ['Tags'], queries: top(tagFreq) });
+  }
+  if (Object.keys(studioFreq).length > 0) {
+    profile.push({ operator: 'any', fields: ['Studios.Name'], queries: top(studioFreq) });
+  }
+  const directorWriterNames = [...top(directorFreq), ...top(writerFreq)];
+  if (directorWriterNames.length > 0) {
+    profile.push({ operator: 'any', fields: ['People.Name'], queries: directorWriterNames });
+  }
+  if (Object.keys(actorFreq).length > 0) {
+    profile.push({ operator: 'any', fields: ['People.Name'], queries: top(actorFreq) });
+  }
+  if (Object.keys(yearFreq).length > 0) {
+    profile.push({ operator: 'between', fields: ['ProductionYear'], queries: [avgYear - 5, avgYear + 5] });
+  }
+  if (ratingStats.length > 0) {
+    profile.push({ operator: '>', fields: ['CommunityRating'], queries: [Math.max(avgRating - 0.5, 6.0)] });
+  }
+  return profile;
 }
 
 
