@@ -51,6 +51,67 @@ function buildRarityMap(allContents) {
   return { genreRarity, tagRarity };
 }
 
+function extractSearchProfileFromWatched(watchedContents) {
+  const genreFreq = {};
+  const tagFreq = {};
+  const studioFreq = {};
+  const directorFreq = {};
+  const writerFreq = {};
+  const actorFreq = {};
+  const yearFreq = {};
+  const ratingStats = [];
+
+  for (const content of watchedContents) {
+    const { Genres = [], Tags = [], ProductionYear, Studios = [], CommunityRating, People = [] } = content;
+
+    Genres.forEach(g => {
+      const k = g.toLowerCase();
+      genreFreq[k] = (genreFreq[k] || 0) + 1;
+    });
+
+    Tags.forEach(t => {
+      const k = t.toLowerCase();
+      tagFreq[k] = (tagFreq[k] || 0) + 1;
+    });
+
+    Studios.forEach(s => {
+      const k = s.Name?.toLowerCase();
+      if (k) studioFreq[k] = (studioFreq[k] || 0) + 1;
+    });
+
+    People?.forEach(p => {
+      const role = p.Type?.toLowerCase();
+      const name = p.Name?.toLowerCase();
+      if (role === 'director') directorFreq[name] = (directorFreq[name] || 0) + 1;
+      if (role === 'writer') writerFreq[name] = (writerFreq[name] || 0) + 1;
+      if (role === 'actor') actorFreq[name] = (actorFreq[name] || 0) + 1;
+    });
+
+    if (ProductionYear) yearFreq[ProductionYear] = (yearFreq[ProductionYear] || 0) + 1;
+    if (CommunityRating) ratingStats.push(CommunityRating);
+  }
+
+  const top = (obj, n = 3) =>
+    Object.entries(obj)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, n)
+      .map(e => e[0]);
+
+  const avgRating = ratingStats.reduce((a, b) => a + b, 0) / (ratingStats.length || 1);
+  const avgYear = Math.round(Object.entries(yearFreq).reduce((sum, [y, count]) => sum + (y * count), 0) / (Object.values(yearFreq).reduce((a, b) => a + b, 0) || 1));
+
+  return [
+    { operator: 'all', fields: ['Genres'], queries: top(genreFreq) },
+    { operator: 'all', fields: ['Tags'], queries: top(tagFreq) },
+    { operator: 'any', fields: ['Studios.Name'], queries: top(studioFreq) },
+    { operator: 'any', fields: ['People.Name'], queries: [...top(directorFreq), ...top(writerFreq)] },
+    { operator: 'any', fields: ['People.Name'], queries: top(actorFreq) },
+    { operator: 'between', fields: ['ProductionYear'], queries: [avgYear - 5, avgYear + 5] },
+    { operator: '>', fields: ['CommunityRating'], queries: [Math.max(avgRating - 0.5, 6.0)] }
+  ];
+}
+
+
 function tokenizeName(name) {
   return (name || "")
     .toLowerCase()
@@ -238,9 +299,6 @@ function computeTasteSimilarity(Content, tasteProfile, options = {}) {
 
   return Math.min(1, totalScore); // Ensure score doesn't exceed 1
 }
-
-
-
 
 // --- Main Execution Logic ---
 function findSimilar(watchedContents, unwatchedContents, numberOfRandomWatchedContents = 10, numberOfSimilarContentsPerWatched = 7) {
