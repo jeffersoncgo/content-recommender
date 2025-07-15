@@ -63,7 +63,7 @@ function createContentCard(Content) {
     <img src="${imageUrl}" alt="${Content.Name} cover" onerror="this.onerror=null; this.src='${noImage}';">
   <div class="Content-info">
       <h3>${Content.Name}</h3>
-      <p class="rating">Score: ${Content.similarityScore !== undefined ? Content.similarityScore.toFixed(0) + '%' : 'N/A'}</p>
+      <p class="rating">Score: ${Content.similarityScore != undefined ? Content.similarityScore.toFixed(0) + '%' : 'N/A'}</p>
       <p class="rating">Community Rating: ${Content.CommunityRating !== undefined ? Content.CommunityRating.toFixed(2) : 'N/A'}</p>
       <p class="year">Year: ${Content.ProductionYear || 'N/A'}</p>
   </div>`;
@@ -109,6 +109,40 @@ function displayRecommendations(recommendations) {
     });
     recommendationsContainer.appendChild(container);
   });
+}
+
+function createBasedOnTastesContainer(recommendations) {
+  const tasteRecommendationsContainer = document.getElementById('taste-recommendations-container');
+  if (!tasteRecommendationsContainer) {
+    console.error("Taste recommendations container not found.");
+    return;
+  }
+
+  tasteRecommendationsContainer.innerHTML = ''; // Clear previous recommendations
+
+  if (!recommendations || recommendations.length === 0) {
+    tasteRecommendationsContainer.innerHTML = '<div class="no-results-message">No taste-based recommendations found.</div>';
+    return;
+  }
+
+  const title = document.createElement('h2');
+  title.classList.add('because-you-watched-title');
+  title.textContent = 'Based on Your General Watched Content';
+  tasteRecommendationsContainer.appendChild(title);
+
+  const ContentGrid = document.createElement('div');
+  ContentGrid.classList.add('Content-grid');
+  tasteRecommendationsContainer.appendChild(ContentGrid);
+
+  recommendations.forEach(Content => {
+    const ContentCardElement = createContentCard(Content);
+    ContentGrid.appendChild(ContentCardElement);
+  });
+}
+
+function displayBasedOnYourTastes(recommendations) {
+  createBasedOnTastesContainer(recommendations);
+    
 }
 
 // Jellyfin Initialization and Login Logic
@@ -161,14 +195,10 @@ function InitializeJellyfin() {
           window.jellyfin.onLibraryLoad(); // Call the callback if it exists
       }
     },
-    onLibraryLoad: () => { // This callback is directly handled by the Jellyfin class when libraries are ready
+    onLibraryLoad: async () => { // This callback is directly handled by the Jellyfin class when libraries are ready
       // Fetch and display recommendations when libraries are loaded
-      getSugestions(ContentsToCheck, similarsToShow) // Default values for demonstration
-          .then(recommendations => displayRecommendations(recommendations))
-          .catch(error => {
-              console.error("Error fetching recommendations:", error);
-              recommendationsContainer.innerHTML = '<div class="no-results-message">Error loading recommendations.</div>';
-          });
+      await updateTestesSugestions(true);
+      await updateRecommendations();
     },
     onSearchFinish: () => {
       // This callback might be for search results, not directly used here for recommendations.
@@ -307,10 +337,10 @@ const getUnplayed = async Library => {
 // Main function to get suggestions using findSimilar
 const getSugestions = async (numberOfRandomWatchedContents = 10, numberOfSimilarContentsPerWatched = 7) => {
   try {
-    const watchedContents = await getPlayed();
+    const watchedContents = window.watched || (await getPlayed());
     window.Played = watchedContents;
 
-    const unwatchedContents = await getUnplayed();
+    const unwatchedContents = window.unwatched || (await getUnplayed());
     window.Unplayed = unwatchedContents;
   
     if (!watchedContents || watchedContents.length === 0) {
@@ -339,3 +369,52 @@ const getSugestions = async (numberOfRandomWatchedContents = 10, numberOfSimilar
     return []; // Return empty array on error
   }
 };
+
+const getSugestionsBasedOnYourTastes = async (isStrict = false) => {
+  window.watched = window.Played || (await getPlayed());   // Your already watched items
+  window.unwatched = window.Unplayed || (await getUnplayed()); // Content pool
+  
+  // window.searchEngine = new SearchEngine();
+  
+  // return window.searchEngine.search(window.unwatched, window.profileQueries, [
+  //   { fields: ['CommunityRating'], type: 'desc' },
+  //   { fields: ['ProductionYear'], type: 'desc' }
+  // ])
+  if (!window.watched || window.watched.length === 0) {
+    console.warn("No watched Contents found for taste-based recommendations.");
+    return [];
+  }
+  if (!window.unwatched || window.unwatched.length === 0) {
+    console.warn("No unwatched Contents found for taste-based recommendations.");
+    return [];
+  }
+
+  if (typeof getTasteBasedContentfindSimilar !== 'function') {
+    console.error("getTasteBasedContentfindSimilar function not available. Ensure findSimilar.js is loaded.");
+    return [];
+  }
+
+  const tasteRecommendations = await getTasteBasedContentfindSimilar(window.watched, window.unwatched, 6, isStrict); // Limit to 10 for taste-based
+  return tasteRecommendations;
+}
+
+async function updateTestesSugestions(isStrict) {
+  try {
+    displayBasedOnYourTastes(await getSugestionsBasedOnYourTastes(isStrict))
+  } catch (error) {
+    console.error("Error fetching taste-based recommendations:", error);
+    const tasteRecommendationsContainer = document.getElementById('taste-recommendations-container');
+    if (tasteRecommendationsContainer) {
+      tasteRecommendationsContainer.innerHTML = '<div class="no-results-message">Error loading taste-based recommendations.</div>';
+    }
+  }
+}
+
+async function updateRecommendations() {
+  try {
+    displayRecommendations(await getSugestions(ContentsToCheck, similarsToShow))
+  } catch (error) {
+    console.error("Error fetching recommendations:", error);
+    recommendationsContainer.innerHTML = '<div class="no-results-message">Error loading recommendations.</div>';
+  }
+}

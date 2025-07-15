@@ -101,7 +101,7 @@ function extractSearchProfileFromWatched(watchedContents) {
   const avgYear = Math.round(Object.entries(yearFreq).reduce((sum, [y, count]) => sum + (y * count), 0) / (Object.values(yearFreq).reduce((a, b) => a + b, 0) || 1));
 
   const profile = [];
-    
+
   if (Object.keys(genreFreq).length > 0) {
     profile.push({ operator: 'all', fields: ['Genres'], queries: top(genreFreq) });
   }
@@ -394,5 +394,62 @@ function findSimilar(watchedContents, unwatchedContents, numberOfRandomWatchedCo
   } catch (error) {
     console.error("An error occurred during similarity analysis:", error);
     return []; // Return empty array on error
+  }
+}
+
+async function getTasteBasedContentfindSimilar(watchedContents, unwatchedContents, limite = 12, isStrict = true) {
+  if (!watchedContents || watchedContents.length === 0) {
+    console.warn("No watched Contents provided for taste-based recommendations.");
+    return [];
+  }
+  if (!unwatchedContents || unwatchedContents.length === 0) {
+    console.warn("No unwatched Contents provided for taste-based recommendations.");
+    return [];
+  }
+
+  window.tasteProfile ??= buildTasteProfile(watchedContents);
+
+  if (isStrict) {
+    window.profileQueries ??= extractSearchProfileFromWatched(watched);
+
+    window.searchEngine ??= new SearchEngine();
+
+    const recommendations = window.searchEngine.search(unwatchedContents, window.profileQueries, [
+      { fields: ['CommunityRating'], type: 'desc' },
+      { fields: ['ProductionYear'], type: 'desc' }
+    ]);
+
+    return recommendations.slice(0, limite).map((Content) => ({
+      Name: Content.Name,
+      Id: Content.Id,
+      Genres: Content.Genres,
+      CommunityRating: Content.CommunityRating,
+      ProductionYear: Content.ProductionYear,
+      similarityScore: computeTasteSimilarity(Content, tasteProfile) * 100,
+      ImageUrl: jellyfin.makeImageUrl(Content.Id)
+    }));
+  } else {
+    const scoredContents = [];
+    for (const Content of unwatchedContents) {
+      const tasteSimilarityScore = computeTasteSimilarity(Content, tasteProfile);
+      if (tasteSimilarityScore > 0) { // Only include Contents with some similarity
+        scoredContents.push({
+          Content,
+          similarityScore: tasteSimilarityScore * 100 // Convert to percentage
+        });
+      }
+    }
+
+    scoredContents.sort((a, b) => b.similarityScore - a.similarityScore);
+
+    return scoredContents.slice(0, limite).map(({ Content, similarityScore }) => ({
+      Name: Content.Name,
+      Id: Content.Id,
+      Genres: Content.Genres,
+      CommunityRating: Content.CommunityRating,
+      ProductionYear: Content.ProductionYear,
+      similarityScore: Math.round(similarityScore),
+      ImageUrl: jellyfin.makeImageUrl(Content.Id)
+    }));
   }
 }
