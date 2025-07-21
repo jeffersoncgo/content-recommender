@@ -1,6 +1,3 @@
-// findSimilar_updated.js
-
-// --- Similarity Weights (Adjust these based on your preferences) ---
 const WEIGHTS = {
   GENRE: 4,
   CRITIC_RATING: 2,
@@ -11,8 +8,7 @@ const WEIGHTS = {
   TAG: 4,
   PRODUCTION_YEAR: 2,
   NAME: 3,
-  START_WITH: 6,
-  // IS_FAVORITE_BONUS: 5,
+  START_WITH: 6
 };
 
 const MAX_YEAR_DIFF = 80;  // Max range considered meaningful for production year
