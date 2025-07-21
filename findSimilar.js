@@ -423,7 +423,7 @@ async function getTasteBasedContentfindSimilar(watchedContents, unwatchedContent
       ProductionYear: Content.ProductionYear,
       similarityScore: computeTasteSimilarity(Content, tasteProfile) * 100,
       ImageUrl: jellyfin.makeImageUrl(Content.Id)
-    }));
+    })).sort((a, b) => b.similarityScore - a.similarityScore);
   } else {
     const scoredContents = [];
     for (const Content of unwatchedContents) {
