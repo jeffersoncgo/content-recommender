@@ -446,6 +446,6 @@ async function getTasteBasedContentfindSimilar(watchedContents, unwatchedContent
       ProductionYear: Content.ProductionYear,
       similarityScore: Math.round(similarityScore),
       ImageUrl: jellyfin.makeImageUrl(Content.Id)
-    }));
+    })).sort((a, b) => b.similarityScore - a.similarityScore);
   }
 }
