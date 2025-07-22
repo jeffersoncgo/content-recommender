@@ -313,7 +313,7 @@ function computeTasteSimilarity(Content, tasteProfile, options = {}) {
 }
 
 // --- Main Execution Logic ---
-function findSimilar(watchedContents, unwatchedContents, numberOfRandomWatchedContents = 10, numberOfSimilarContentsPerWatched = 7) {
+function findSimilar(watchedContents, unwatchedContents, numberOfRandomWatchedContents = 10, numberOfSimilarContentsPerWatched = 7, useSingleAppearance = true) {
   try {
     const trulyUnwatchedContents = unwatchedContents.filter(
       m => !(m.UserData?.Played)
@@ -344,7 +344,9 @@ function findSimilar(watchedContents, unwatchedContents, numberOfRandomWatchedCo
       usedWatchedIds.add(randomWatched.Id);
 
       // Filter unwatched Contents to exclude those already recommended from any previous target Content
-      const availableUnwatched = trulyUnwatchedContents.filter(m => !usedUnwatchedIds.has(m.Id));
+      let availableUnwatched = trulyUnwatchedContents;
+      if (useSingleAppearance)
+        availableUnwatched = trulyUnwatchedContents.filter(m => !usedUnwatchedIds.has(m.Id));
 
       const similarContents = findSimilarForOne(
         randomWatched,

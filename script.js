@@ -335,7 +335,7 @@ const getUnplayed = async Library => {
 }
 
 // Main function to get suggestions using findSimilar
-const getSugestions = async (numberOfRandomWatchedContents = 10, numberOfSimilarContentsPerWatched = 7) => {
+const getSugestions = async (numberOfRandomWatchedContents = 10, numberOfSimilarContentsPerWatched = 7, useSingleAppearance = true) => {
   try {
     const watchedContents = window.watched || (await getPlayed());
     window.Played = watchedContents;
@@ -361,7 +361,7 @@ const getSugestions = async (numberOfRandomWatchedContents = 10, numberOfSimilar
         return [];
     }
 
-    const recommendations = findSimilar(watchedContents, unwatchedContents, numberOfRandomWatchedContents, numberOfSimilarContentsPerWatched);
+    const recommendations = findSimilar(watchedContents, unwatchedContents, numberOfRandomWatchedContents, numberOfSimilarContentsPerWatched, useSingleAppearance);
     return recommendations;
 
   } catch (error) {
@@ -412,7 +412,7 @@ async function updateTestesSugestions(isStrict) {
 
 async function updateRecommendations() {
   try {
-    displayRecommendations(await getSugestions(ContentsToCheck, similarsToShow))
+    displayRecommendations(await getSugestions(ContentsToCheck, similarsToShow, false))
   } catch (error) {
     console.error("Error fetching recommendations:", error);
     recommendationsContainer.innerHTML = '<div class="no-results-message">Error loading recommendations.</div>';
