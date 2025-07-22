@@ -394,7 +394,7 @@ const getSugestionsBasedOnYourTastes = async (isStrict = false) => {
     return [];
   }
 
-  const tasteRecommendations = await getTasteBasedContentfindSimilar(window.watched, window.unwatched, 6, isStrict); // Limit to 10 for taste-based
+  const tasteRecommendations = await getTasteBasedContentfindSimilar(window.watched, window.unwatched, 6, isStrict, true); // Limit to 10 for taste-based
   return tasteRecommendations;
 }
 

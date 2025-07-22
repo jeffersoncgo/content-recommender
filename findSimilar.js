@@ -47,7 +47,7 @@ function buildRarityMap(allContents) {
   return { genreRarity, tagRarity };
 }
 
-function extractSearchProfileFromWatched(watchedContents) {
+function extractSearchProfileFromWatched(watchedContents, topCount = 3) {
   const genreFreq = {};
   const tagFreq = {};
   const studioFreq = {};
@@ -87,7 +87,7 @@ function extractSearchProfileFromWatched(watchedContents) {
     if (CommunityRating) ratingStats.push(CommunityRating);
   }
 
-  const top = (obj, n = 3) =>
+  const top = (obj, n = topCount) =>
     Object.entries(obj)
       .sort((a, b) => b[1] - a[1])
       .slice(0, n)
@@ -393,7 +393,7 @@ function findSimilar(watchedContents, unwatchedContents, numberOfRandomWatchedCo
   }
 }
 
-async function getTasteBasedContentfindSimilar(watchedContents, unwatchedContents, limite = 12, isStrict = true) {
+async function getTasteBasedContentfindSimilar(watchedContents, unwatchedContents, limite = 12, isStrict = true, useSingleAppearance = true) {
   if (!watchedContents || watchedContents.length === 0) {
     console.warn("No watched Contents provided for taste-based recommendations.");
     return [];
@@ -406,14 +406,14 @@ async function getTasteBasedContentfindSimilar(watchedContents, unwatchedContent
   window.tasteProfile ??= buildTasteProfile(watchedContents);
 
   if (isStrict) {
-    window.profileQueries ??= extractSearchProfileFromWatched(watched);
+    window.profileQueries ??= extractSearchProfileFromWatched(watched, 7);
 
     window.searchEngine ??= new SearchEngine();
 
     const recommendations = window.searchEngine.search(unwatchedContents, window.profileQueries, [
       { fields: ['CommunityRating'], type: 'desc' },
       { fields: ['ProductionYear'], type: 'desc' }
-    ]);
+    ], useSingleAppearance);
 
     return recommendations.slice(0, limite).map((Content) => ({
       Name: Content.Name,
