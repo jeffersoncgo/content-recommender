@@ -412,24 +412,29 @@ async function getTasteBasedContentfindSimilar(watchedContents, unwatchedContent
 
     window.searchEngine ??= new SearchEngine();
 
-    const recommendations = window.searchEngine.search(unwatchedContents, window.profileQueries, [
+    window.recommendations = window.searchEngine.search(watchedContents, window.profileQueries, [
       { fields: ['CommunityRating'], type: 'desc' },
       { fields: ['ProductionYear'], type: 'desc' }
     ], useSingleAppearance);
 
-    return recommendations.slice(0, limite).map((Content) => ({
-      Name: Content.Name,
-      Id: Content.Id,
-      Genres: Content.Genres,
-      CommunityRating: Content.CommunityRating,
-      ProductionYear: Content.ProductionYear,
-      similarityScore: computeTasteSimilarity(Content, tasteProfile) * 100,
+    window.tasteProfile = buildTasteProfile(window.recommendations);
+    window.profileQueries = extractSearchProfileFromWatched(window.recommendations, 7);
+
+
+    window.recommendations = window.searchEngine.search(unwatchedContents, window.profileQueries, [
+      { fields: ['CommunityRating'], type: 'desc' },
+      { fields: ['ProductionYear'], type: 'desc' }
+    ], useSingleAppearance).map((Content) => ({
+      ...Content,
+      similarityScore: computeTasteSimilarity(Content, window.tasteProfile) * 100,
       ImageUrl: jellyfin.makeImageUrl(Content.Id)
     })).sort((a, b) => b.similarityScore - a.similarityScore);
+
+    return window.recommendations.slice(0, limite)
   } else {
     const scoredContents = [];
     for (const Content of unwatchedContents) {
-      const tasteSimilarityScore = computeTasteSimilarity(Content, tasteProfile);
+      const tasteSimilarityScore = computeTasteSimilarity(Content, window.tasteProfile);
       if (tasteSimilarityScore > 0) { // Only include Contents with some similarity
         scoredContents.push({
           Content,
@@ -441,11 +446,7 @@ async function getTasteBasedContentfindSimilar(watchedContents, unwatchedContent
     scoredContents.sort((a, b) => b.similarityScore - a.similarityScore);
 
     return scoredContents.slice(0, limite).map(({ Content, similarityScore }) => ({
-      Name: Content.Name,
-      Id: Content.Id,
-      Genres: Content.Genres,
-      CommunityRating: Content.CommunityRating,
-      ProductionYear: Content.ProductionYear,
+      ...Content,
       similarityScore: Math.round(similarityScore),
       ImageUrl: jellyfin.makeImageUrl(Content.Id)
     })).sort((a, b) => b.similarityScore - a.similarityScore);

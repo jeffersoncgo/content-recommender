@@ -9,6 +9,8 @@ const recommendationsContainer = document.getElementById('recommendations-contai
 
 let ContentsToCheck = 3;
 let similarsToShow = 6;
+let recommendationsShowed = 0;
+
 const noImage = "https://placehold.co/200x280/808080/FFFFFF?text=No+Image"
 
 // Function to generate Jellyfin Content detail URL
@@ -118,31 +120,46 @@ function createBasedOnTastesContainer(recommendations) {
     return;
   }
 
-  tasteRecommendationsContainer.innerHTML = ''; // Clear previous recommendations
+  // tasteRecommendationsContainer.innerHTML = ''; // Clear previous recommendations
 
   if (!recommendations || recommendations.length === 0) {
     tasteRecommendationsContainer.innerHTML = '<div class="no-results-message">No taste-based recommendations found.</div>';
     return;
   }
 
-  const title = document.createElement('h2');
-  title.classList.add('because-you-watched-title');
-  title.textContent = 'Based on Your General Watched Content';
-  tasteRecommendationsContainer.appendChild(title);
+  if(tasteRecommendationsContainer.childElementCount == 0) {
+    const title = document.createElement('h2');
+    title.classList.add('because-you-watched-title');
+    title.textContent = 'Based on Your General Watched Content';
+    tasteRecommendationsContainer.appendChild(title);
 
-  const ContentGrid = document.createElement('div');
-  ContentGrid.classList.add('Content-grid');
-  tasteRecommendationsContainer.appendChild(ContentGrid);
+    ContentGrid = document.createElement('div');
+    ContentGrid.classList.add('Content-grid');
+    tasteRecommendationsContainer.appendChild(ContentGrid);
 
+    const loadMoreBtn = document.createElement('button');
+    loadMoreBtn.classList.add('load-more-btn');
+    loadMoreBtn.textContent = 'Load More';
+    loadMoreBtn.addEventListener('click', async () => {
+      if (recommendationsShowed < window.recommendations.length) {
+        createBasedOnTastesContainer(window.recommendations.slice(recommendationsShowed, recommendationsShowed + similarsToShow));
+      } else {
+        loadMoreBtn.style.display = 'none';
+      }
+    });
+    tasteRecommendationsContainer.appendChild(loadMoreBtn);
+  } else {
+    ContentGrid = tasteRecommendationsContainer.querySelector('.Content-grid');
+  }
   recommendations.forEach(Content => {
     const ContentCardElement = createContentCard(Content);
     ContentGrid.appendChild(ContentCardElement);
+    recommendationsShowed++;
   });
 }
 
 function displayBasedOnYourTastes(recommendations) {
   createBasedOnTastesContainer(recommendations);
-    
 }
 
 // Jellyfin Initialization and Login Logic
@@ -212,20 +229,7 @@ jellyfinloginActionBtn.addEventListener('click', () => {
 });
 
 // Event listener for cleaning memory
-cleanMemoryBtn.addEventListener('click', () => {
-  if (window.memory && typeof window.memory.reset === 'function') {
-    window.memory.reset().then(() => {
-      console.log("Memory cleared. Reloading page.");
-      location.reload();
-    }).catch(error => {
-      console.error("Error clearing memory:", error);
-      alert("Failed to clear memory. Please try again.");
-    });
-  } else {
-    console.error("Memory object or reset function not available.");
-    alert("Memory management system not ready.");
-  }
-});
+cleanMemoryBtn.addEventListener('click', () => jellyfin.cleanDb());
 
 // ======================
 // Storage Functions
