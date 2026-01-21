@@ -209,6 +209,7 @@ function InitializeJellyfin() {
       document.getElementById('loginErrorMessage').innerText = "";
       // Trigger library load after successful login
       if (window.jellyfin.onLibraryLoad) {
+          window.jellyfin.IncludeItemsTypes = ["Audio", "Video", "Book", "Movie", "Series", ]
           window.jellyfin.onLibraryLoad(); // Call the callback if it exists
       }
     },
