@@ -1,3 +1,5 @@
+// CRITIC_RATING, ACTOR, DIRECTOR_WRITER and STUDIO are not used by calculateSimilarity yet (the Jellyfin client does not
+// request People/Studios/CriticRating for every item); they are kept for when it does.
 const WEIGHTS = {
   GENRE: 4,
   CRITIC_RATING: 2,

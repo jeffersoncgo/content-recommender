@@ -101,6 +101,9 @@ function createContentCard(Content) {
     }
   });
   ContentCard.setAttribute('tabindex', '0'); // Make it focusable
+  // Announced as a link to the item in Jellyfin (Enter/Space open it, see above)
+  ContentCard.setAttribute('role', 'link');
+  ContentCard.setAttribute('aria-label', `${Content.Name} — open in Jellyfin`);
 
   return ContentCard;
 }
@@ -273,6 +276,7 @@ jellyfinLogoutBtn?.addEventListener('click', async () => {
 
 // Event listener for cleaning memory
 cleanMemoryBtn.addEventListener('click', async () => {
+  if (!confirm('Clean saved memory? The page memory and the Jellyfin library cache will be erased.')) return;
   // Also works before logging in (there is no jellyfin instance then)
   try { await window.memory?.reset?.(); } catch (error) { console.warn('Could not reset page memory:', error); }
   if (window.jellyfin?.cleanDb) window.jellyfin.cleanDb(); // reloads the page
