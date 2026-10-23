@@ -22,25 +22,29 @@ Publicado em `https://jeffersoncgo.github.io/content-recommender/`. Não há bui
 | `style.css` | Tema escuro, grade de cartões responsiva (≤ 768 px e ≤ 480 px) |
 | `script.js` | Login, coleta de assistidos/não assistidos, renderização dos cartões |
 | `findSimilar.js` | Algoritmos de similaridade e de gosto |
-| `script_infinity_scroll.js` | Busca mais grupos "Because you watched" ao chegar perto do fim da página |
+| `script_infinity_scroll.js` | Busca mais grupos "Because you watched" ao chegar perto do fim da página (um lote por vez) |
+| `js/vendor/` | Cópias das dependências (abaixo) |
 
-### Dependências carregadas em tempo de execução (sem versão fixa)
+### Dependências (cópias em `js/vendor/`, desde 2026-10-23)
 
 ```
-https://jeffersoncgo.github.io/cdn/js/common.js        utils, extensões de String/Array
-https://jeffersoncgo.github.io/cdn/js/base.js          JCGWeb
-https://jeffersoncgo.github.io/cdn/js/object.js        searchInArray (usado pelo cliente Jellyfin)
-https://jeffersoncgo.github.io/cdn/js/controller.js    Controller (debounce do searchItems)
-https://jeffersoncgo.github.io/cdn/js/observer.js      Observer (usado pelo pageMemory)
-https://jeffersoncgo.github.io/cdn/js/pagememory.js    persistência dos campos de login
-https://jeffersoncgo.github.io/CoverMaker/js/windowsHandle.js   showWindow/hideWindow
-https://jeffersoncgo.github.io/cdn/js/fetchqueue.js    FetchQueue
-https://jeffersoncgo.github.io/CoverMaker/js/jellyfin.js        classe Jellyfin (API + cache IndexedDB + Meilisearch)
-https://jeffersoncgo.github.io/cdn/js/search.js        SearchEngine (recomendação por gosto, modo estrito)
+js/vendor/common.js        ← jeffersoncgo/cdn      js/common.js       utils, extensões de String/Array
+js/vendor/base.js          ← jeffersoncgo/cdn      js/base.js         JCGWeb
+js/vendor/object.js        ← jeffersoncgo/cdn      js/object.js       searchInArray (usado pelo cliente Jellyfin)
+js/vendor/controller.js    ← jeffersoncgo/cdn      js/controller.js   Controller (debounce do searchItems)
+js/vendor/observer.js      ← jeffersoncgo/cdn      js/observer.js     Observer (usado pelo pageMemory)
+js/vendor/pagememory.js    ← jeffersoncgo/cdn      js/pagememory.js   persistência dos campos [save]
+js/vendor/windowsHandle.js ← jeffersoncgo/CoverMaker js/windowsHandle.js  showWindow/hideWindow
+js/vendor/fetchqueue.js    ← jeffersoncgo/cdn      js/fetchqueue.js   FetchQueue
+js/vendor/jellyfin.js      ← jeffersoncgo/CoverMaker js/jellyfin.js   classe Jellyfin (login, API, cache IndexedDB, Meilisearch)
+js/vendor/search.js        ← jeffersoncgo/cdn      js/search.js       SearchEngine (recomendação por gosto, modo estrito)
 https://cdnjs.cloudflare.com/.../font-awesome/6.7.2    ícones (com SRI)
 ```
 
-Qualquer push em `main` dos repositórios `cdn` e `CoverMaker` altera este app imediatamente.
+Antes eram carregadas ao vivo do GitHub Pages dos outros repositórios: qualquer push lá alterava (e podia quebrar)
+este app sem aviso (`CR-05`). Agora a atualização é consciente: ao mudar um desses arquivos na origem, copie para
+`js/vendor/` com o mesmo conteúdo e rode os testes deste app (ver o checklist em
+`CoverMaker/docs/PLANO-DE-CORRECOES.md`).
 
 ## 3. Fluxo
 
@@ -105,12 +109,20 @@ penalidade = 0,85 ^ (nºGêneros − 4)   se o item tiver mais de 4 gêneros, se
 score      = min(1, (0,65 × genreScore + 0,35 × tagScore) × penalidade) × 100
 ```
 
-- **Modo não estrito**: pontua todo o catálogo não assistido, devolve os `limite` melhores.
+- **Modo não estrito**: pontua todo o catálogo não assistido, devolve os `limite` melhores (a lista completa também
+  fica em `window.recommendations`, para o **Load More**).
 - **Modo estrito** (usado pelo app): monta consultas de busca a partir dos assistidos
   (`extractSearchProfileFromWatched`: 7 gêneros e 7 tags mais frequentes com operador `all`, ano médio ± 5,
   nota > `max(média − 0,5, 6)`), filtra os assistidos com o `SearchEngine`, recalcula o perfil sobre esse subconjunto,
   filtra os não assistidos com as novas consultas e ordena pela pontuação acima. O resultado completo fica em
   `window.recommendations` e o botão **Load More** exibe mais 6 por clique.
+- Na prática (`CR-06`, mantido de propósito): a busca roda no modo *lax* (soma pontos por consulta); `all` com 7 gêneros
+  quase nunca casa e `between` não é operador do `SearchEngine` (que usa `..`), então **só a nota mínima filtra**.
+  Corrigir isso muda as recomendações — fica para decisão do usuário, testando com a biblioteca real.
+- Tipos recomendados: `Audio`, `Video`, `Book`, `Movie`, `Series` (`RECOMMENDABLE_TYPES` em `script.js`). O filtro é
+  aplicado ao montar as listas, não na carga: o cache das bibliotecas é compartilhado com o CoverMaker, e carregar
+  menos tipos aqui faria um app recarregar o cache do outro a cada visita.
+- O status "assistido" é atualizado a cada carga (`needsUserData = true`), mesmo com a biblioteca vinda do cache.
 
 ## 6. Configuração
 
@@ -122,6 +134,7 @@ score      = min(1, (0,65 × genreScore + 0,35 × tagScore) × penalidade) × 10
 | Âncoras e itens por âncora | `ContentsToCheck = 3`, `similarsToShow = 6` em `script.js` |
 | Itens por clique em Load More | `similarsToShow` |
 | Imagem padrão | `noImage` (placehold.co) |
+| Tamanho das imagens dos cartões | `POSTER_WIDTH × POSTER_HEIGHT = 360 × 540` (retrato, 2× o cartão), qualidade 80, em `findSimilar.js` |
 
 ## 7. Armazenamento
 

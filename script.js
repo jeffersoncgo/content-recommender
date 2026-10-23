@@ -8,6 +8,9 @@ const jellyfinLogoutBtn = document.getElementById('logoutAction');
 const cleanMemoryBtn = document.getElementById('cleanMemoryBtn');
 const recommendationsContainer = document.getElementById('recommendations-container');
 
+// Item types that can be recommended (playlists, collections, channels… are not)
+const RECOMMENDABLE_TYPES = ["Audio", "Video", "Book", "Movie", "Series"];
+
 let ContentsToCheck = 3;
 let similarsToShow = 6;
 let recommendationsShowed = 0;
@@ -103,14 +106,20 @@ function createContentCard(Content) {
 }
 
 // Function to display recommendations
-function displayRecommendations(recommendations) {
+// append: a later batch (infinite scroll) — an empty batch then adds nothing instead of replacing the page
+function displayRecommendations(recommendations, { append = false } = {}) {
   const loadingMessage = document.querySelector('.loading-message');
   if (loadingMessage) {
     loadingMessage.remove(); // Remove the loading message
   }
 
   if (!recommendations || recommendations.length === 0) {
-    recommendationsContainer.innerHTML = '<div class="no-results-message">No recommendations found. Try watching more Contents!</div>';
+    if (append) return;
+    // Added after the taste section instead of replacing the whole container (which erased that section too)
+    const message = document.createElement('div');
+    message.className = 'no-results-message';
+    message.textContent = 'No recommendations found. Try watching more Contents!';
+    recommendationsContainer.appendChild(message);
     return;
   }
 
@@ -141,6 +150,7 @@ function createBasedOnTastesContainer(recommendations) {
     return;
   }
 
+  let ContentGrid;
   if(tasteRecommendationsContainer.childElementCount == 0) {
     const title = document.createElement('h2');
     title.classList.add('because-you-watched-title');
@@ -151,11 +161,12 @@ function createBasedOnTastesContainer(recommendations) {
     ContentGrid.classList.add('Content-grid');
     tasteRecommendationsContainer.appendChild(ContentGrid);
 
+
     const loadMoreBtn = document.createElement('button');
     loadMoreBtn.classList.add('load-more-btn');
     loadMoreBtn.textContent = 'Load More';
     loadMoreBtn.addEventListener('click', async () => {
-      if (recommendationsShowed < window.recommendations.length) {
+      if (recommendationsShowed < (window.recommendations?.length ?? 0)) {
         createBasedOnTastesContainer(window.recommendations.slice(recommendationsShowed, recommendationsShowed + similarsToShow));
       } else {
         loadMoreBtn.style.display = 'none';
@@ -222,6 +233,8 @@ function InitializeJellyfin(explicitLogin = false) {
       jellyfinloginActionBtn.removeAttribute('inactive');
     },
     onLoginSuccess: () => {
+      // Logged in again (e.g. another account) after recommendations were shown: start over with the new session
+      if (window.Played) { location.reload(); return; }
       hideWindow("loginBox"); // Hide login box on successful login
       // The Jellyfin class saved the session token: the password is no longer needed anywhere
       forgetSavedPassword();
@@ -244,7 +257,7 @@ function InitializeJellyfin(explicitLogin = false) {
     onSearchFinish: () => {
       // This callback might be for search results, not directly used here for recommendations.
     }
-  }, false, { preferCredentials: explicitLogin });
+  }, /* needsUserData: refresh watched status even when the library comes from the cache */ true, { preferCredentials: explicitLogin });
 }
 
 // Event listener for the Login/Connect button
@@ -259,7 +272,12 @@ jellyfinLogoutBtn?.addEventListener('click', async () => {
 });
 
 // Event listener for cleaning memory
-cleanMemoryBtn.addEventListener('click', () => jellyfin.cleanDb());
+cleanMemoryBtn.addEventListener('click', async () => {
+  // Also works before logging in (there is no jellyfin instance then)
+  try { await window.memory?.reset?.(); } catch (error) { console.warn('Could not reset page memory:', error); }
+  if (window.jellyfin?.cleanDb) window.jellyfin.cleanDb(); // reloads the page
+  else location.reload();
+});
 
 // ======================
 // Storage Functions
@@ -363,8 +381,10 @@ const getList = async (Library, PlayStatus) => {
 
   try {
     const items = await window.jellyfin.searchItems('', '', {});
-    // The Jellyfin.js searchItems function returns a promise that resolves with the item list
-    return items || []; // Ensure we always return an array
+    // The Jellyfin.js searchItems function returns a promise that resolves with the item list.
+    // Only these types are recommended. They are filtered here and not at load time: the library cache is shared
+    // with CoverMaker, and loading fewer types there would make each app reload the other's cache on every visit.
+    return (items || []).filter(item => !item?.Type || RECOMMENDABLE_TYPES.includes(item.Type)); // Ensure we always return an array
   } catch (error) {
     console.error(`Error fetching ${PlayStatus || 'all'} items from library '${Library}':`, error);
     return []; // Return empty array on error

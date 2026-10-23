@@ -2,10 +2,13 @@
 // Infinite Scroll Loader
 // ======================
 
+// One batch at a time: every scroll event near the bottom used to start another batch in parallel
+let loadingMoreRecommendations = false;
+
 // Add a scroll listener to window (or a scrollable container if needed)
 window.addEventListener('scroll', async () => {
   const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 200;
-  if (!nearBottom) return;
+  if (!nearBottom || loadingMoreRecommendations) return;
 
   // Basic safety: Avoid re-fetching if data isn't loaded yet
   if (!window.Played || !Array.isArray(window.Played)) return;
@@ -17,15 +20,13 @@ window.addEventListener('scroll', async () => {
   }
 
   // Fetch and append new batch
+  loadingMoreRecommendations = true;
   try {
-    getSugestions(ContentsToCheck, similarsToShow) // Default values for demonstration
-      .then(recommendations => {
-        displayRecommendations(recommendations);
-      })
-      .catch(error => {
-        console.error("Infinite scroll error:", error);
-      });
+    const recommendations = await getSugestions(ContentsToCheck, similarsToShow); // Default values for demonstration
+    displayRecommendations(recommendations, { append: true });
   } catch (err) {
-    console.error("Failed during infinite scroll trigger:", err);
+    console.error("Infinite scroll error:", err);
+  } finally {
+    loadingMoreRecommendations = false;
   }
 });

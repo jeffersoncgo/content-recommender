@@ -57,17 +57,20 @@
         </div>
     </main>
 
-    <!-- Important: Scripts should bered to load after DOM is ready -->
-    <script src="https://jeffersoncgo.github.io/cdn/js/common.js"></script>
-    <script src="https://jeffersoncgo.github.io/cdn/js/base.js"></script>
-    <script src="https://jeffersoncgo.github.io/cdn/js/object.js"></script>
-    <script src="https://jeffersoncgo.github.io/cdn/js/controller.js"></script>
-    <script src="https://jeffersoncgo.github.io/cdn/js/observer.js"></script>
-    <script src="https://jeffersoncgo.github.io/cdn/js/pagememory.js"></script>
-    <script src="https://jeffersoncgo.github.io/CoverMaker/js/windowsHandle.js"></script>
-    <script src="https://jeffersoncgo.github.io/cdn/js/fetchqueue.js"></script>
-    <script src="https://jeffersoncgo.github.io/CoverMaker/js/jellyfin.js"></script>
-    <script src="https://jeffersoncgo.github.io/cdn/js/search.js"></script>
+    <!-- Important: scripts must load after the DOM is ready -->
+    <!-- Copies of jeffersoncgo/cdn (js/*.js) and jeffersoncgo/CoverMaker (js/jellyfin.js, js/windowsHandle.js).
+         Loading them from the live sites meant any change there could break this app without notice (CR-05);
+         update them on purpose, see docs/DOCUMENTACAO.md. -->
+    <script src="js/vendor/common.js"></script>
+    <script src="js/vendor/base.js"></script>
+    <script src="js/vendor/object.js"></script>
+    <script src="js/vendor/controller.js"></script>
+    <script src="js/vendor/observer.js"></script>
+    <script src="js/vendor/pagememory.js"></script>
+    <script src="js/vendor/windowsHandle.js"></script>
+    <script src="js/vendor/fetchqueue.js"></script>
+    <script src="js/vendor/jellyfin.js"></script>
+    <script src="js/vendor/search.js"></script>
     <!-- <script src="search.js"></script> -->
     <script src="findSimilar.js" defer></script>
     <script src="script.js" defer></script>
