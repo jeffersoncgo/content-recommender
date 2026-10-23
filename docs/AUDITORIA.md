@@ -10,6 +10,7 @@
 
 | ID | Sev. | Onde | Problema |
 |---|---|---|---|
+| CR-14 | **Crítica** | `script.js:326` + `CoverMaker/js/jellyfin.js:754` | **Nenhuma recomendação aparece desde 2025-12-01**: o `AbortSignal` cai no parâmetro `tempLimit` 🧪 |
 | CR-01 | Alta | `script.js:190` | Histórico "assistido" congela no primeiro carregamento (cache sem atualização de `UserData`) 🔎 |
 | CR-02 | Alta | dependência `jellyfin.js` | Servidores com plugin Meilisearch: itens chegam sem `UserData` (nada "assistido") ou bibliotecas nem carregam 🔎 |
 | CR-03 | Alta | `script.js:64-71` | XSS: nome do item interpolado em `innerHTML` e em atributo 🔎 |
@@ -25,6 +26,19 @@
 | CR-13 | Baixa | `README.md`, `index.html` | Documentação e pequenos detalhes de HTML/acessibilidade 🔎 |
 
 ---
+
+### CR-14 — Nenhuma recomendação desde 2025-12-01 (Crítica) 🧪
+
+`getList` chama `jellyfin.searchItems('', '', {})` com três argumentos. O `Controller` acrescenta o `AbortSignal` como
+último argumento, que cai no 4º parâmetro de `searchItems` — `tempLimit`, adicionado ao `jellyfin.js` do CoverMaker
+em 2025-12-01 (`adc260c`). Então `mLimit = tempLimit || limit` vira o `AbortSignal` e
+`items.slice(0, 0 + signal)` devolve `[]`: assistidos e não assistidos ficam vazios e o app mostra
+"No recommendations found". Reproduzido com um servidor Jellyfin simulado (55 itens, 19 assistidos): a versão publicada
+mostra 0 recomendações; com a correção, 6 por gosto + 3 grupos × 6.
+
+**Correção (feita no CoverMaker, branch `claude/beautiful-davinci-nd8o1m`):** `tempLimit` só vale se for número positivo.
+Os chamadores do CoverMaker passam número ou `null`, então nada muda para eles. Como este app carrega o `jellyfin.js`
+do GitHub Pages do CoverMaker, a correção chega aqui quando o CoverMaker for publicado.
 
 ### CR-01 — Status "assistido" não atualiza (Alta) 🔎
 
