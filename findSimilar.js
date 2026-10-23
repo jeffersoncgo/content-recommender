@@ -1,3 +1,5 @@
+// CRITIC_RATING, ACTOR, DIRECTOR_WRITER and STUDIO are not used by calculateSimilarity yet (the Jellyfin client does not
+// request People/Studios/CriticRating for every item); they are kept for when it does.
 const WEIGHTS = {
   GENRE: 4,
   CRITIC_RATING: 2,
@@ -13,6 +15,9 @@ const WEIGHTS = {
 
 const MAX_YEAR_DIFF = 80;  // Max range considered meaningful for production year
 const EPSILON = 1e-6;      // To prevent division by zero in unions
+
+// Cards show the primary image in portrait (~180×270, object-fit: cover): ask for that shape, at 2× for sharp screens
+const POSTER_WIDTH = 360, POSTER_HEIGHT = 540, POSTER_QUALITY = 80;
 
 const usedWatchedIds = new Set();   // Track already tried watched Contents
 const usedUnwatchedIds = new Set(); // Track recommended unwatched Contents to avoid duplicates
@@ -115,6 +120,8 @@ function extractSearchProfileFromWatched(watchedContents, topCount = 3) {
   //   profile.push({ operator: 'any', fields: ['People.Name'], queries: top(actorFreq) });
   // }
   if (Object.keys(yearFreq).length > 0) {
+    // Note (CR-06): 'between' is not a SearchEngine operator (that is '..'), so this query scores nothing and the year
+    // does not filter. Kept as is on purpose: changing it changes the recommendations (decision for the user).
     profile.push({ operator: 'between', fields: ['ProductionYear'], queries: [avgYear - 5, avgYear + 5] });
   }
   if (ratingStats.length > 0) {
@@ -126,8 +133,11 @@ function extractSearchProfileFromWatched(watchedContents, topCount = 3) {
 
 function tokenizeName(name) {
   return (name || "")
+    // Accents are removed and letters of any script are kept ("Ação" → "acao"; before: "ao", and Japanese/Korean
+    // titles had no tokens). For plain ASCII titles the result is the same as before.
+    .normalize('NFD').replace(/\p{M}/gu, '')
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '') // remove punctuation
+    .replace(/[^\p{L}\p{N}\s]/gu, '') // remove punctuation
     .split(/\s+/)
     .filter(w => w.length > 1 && !['the', 'part', 'season', 'episode'].includes(w));
 }
@@ -229,7 +239,12 @@ function selectRandomContents(Contents, count) {
   if (Contents.length === 0) return [];
   if (Contents.length <= count) return [...Contents];
 
-  const shuffled = [...Contents].sort(() => 0.5 - Math.random());
+  // Fisher-Yates: every item has the same chance (sort(() => 0.5 - Math.random()) is biased)
+  const shuffled = [...Contents];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
   return shuffled.slice(0, count);
 }
 
@@ -384,7 +399,7 @@ function findSimilar(watchedContents, unwatchedContents, numberOfRandomWatchedCo
         CommunityRating: Content.CommunityRating,
         ProductionYear: Content.ProductionYear,
         similarityScore: Math.round(similarityScore),
-        ImageUrl: jellyfin.makeImageUrl(Content.Id) // Assuming jellyfin object is available globally or passed in
+        ImageUrl: jellyfin.makeImageUrl(Content.Id, POSTER_WIDTH, POSTER_HEIGHT, POSTER_QUALITY) // Assuming jellyfin object is available globally or passed in
       }))
     }));
 
@@ -408,14 +423,17 @@ async function getTasteBasedContentfindSimilar(watchedContents, unwatchedContent
   window.tasteProfile ??= buildTasteProfile(watchedContents);
 
   if (isStrict) {
-    window.profileQueries ??= extractSearchProfileFromWatched(watched, 7);
+    // (was the implicit global `watched`, which is the same list the caller passes)
+    window.profileQueries ??= extractSearchProfileFromWatched(watchedContents, 7);
 
     window.searchEngine ??= new SearchEngine();
 
+    // The 4th argument of SearchEngine.search is isLaxQuery (score every query), not useSingleAppearance.
+    // Callers always passed true, so the lax search is kept explicitly.
     window.recommendations = window.searchEngine.search(watchedContents, window.profileQueries, [
       { fields: ['CommunityRating'], type: 'desc' },
       { fields: ['ProductionYear'], type: 'desc' }
-    ], useSingleAppearance);
+    ], /* isLaxQuery */ true);
 
     window.tasteProfile = buildTasteProfile(window.recommendations);
     window.profileQueries = extractSearchProfileFromWatched(window.recommendations, 7);
@@ -424,10 +442,10 @@ async function getTasteBasedContentfindSimilar(watchedContents, unwatchedContent
     window.recommendations = window.searchEngine.search(unwatchedContents, window.profileQueries, [
       { fields: ['CommunityRating'], type: 'desc' },
       { fields: ['ProductionYear'], type: 'desc' }
-    ], useSingleAppearance).map((Content) => ({
+    ], /* isLaxQuery */ true).map((Content) => ({
       ...Content,
       similarityScore: computeTasteSimilarity(Content, window.tasteProfile) * 100,
-      ImageUrl: jellyfin.makeImageUrl(Content.Id)
+      ImageUrl: jellyfin.makeImageUrl(Content.Id, POSTER_WIDTH, POSTER_HEIGHT, POSTER_QUALITY)
     })).sort((a, b) => b.similarityScore - a.similarityScore);
 
     return window.recommendations.slice(0, limite)
@@ -445,10 +463,12 @@ async function getTasteBasedContentfindSimilar(watchedContents, unwatchedContent
 
     scoredContents.sort((a, b) => b.similarityScore - a.similarityScore);
 
-    return scoredContents.slice(0, limite).map(({ Content, similarityScore }) => ({
+    // The whole ranked list is kept (like the strict mode does) so "Load More" can show the next ones
+    window.recommendations = scoredContents.map(({ Content, similarityScore }) => ({
       ...Content,
       similarityScore: Math.round(similarityScore),
-      ImageUrl: jellyfin.makeImageUrl(Content.Id)
+      ImageUrl: jellyfin.makeImageUrl(Content.Id, POSTER_WIDTH, POSTER_HEIGHT, POSTER_QUALITY)
     })).sort((a, b) => b.similarityScore - a.similarityScore);
+    return window.recommendations.slice(0, limite);
   }
 }

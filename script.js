@@ -4,8 +4,12 @@
 // Initialization
 // ======================
 const jellyfinloginActionBtn = document.getElementById('loginAction');
+const jellyfinLogoutBtn = document.getElementById('logoutAction');
 const cleanMemoryBtn = document.getElementById('cleanMemoryBtn');
 const recommendationsContainer = document.getElementById('recommendations-container');
+
+// Item types that can be recommended (playlists, collections, channels… are not)
+const RECOMMENDABLE_TYPES = ["Audio", "Video", "Book", "Movie", "Series"];
 
 let ContentsToCheck = 3;
 let similarsToShow = 6;
@@ -61,14 +65,27 @@ function createContentCard(Content) {
   // Use a fallback image if Content.ImageUrl is not provided or invalid
   const imageUrl = Content.ImageUrl || noImage;
 
-  ContentCard.innerHTML = `
-    <img src="${imageUrl}" alt="${Content.Name} cover" onerror="this.onerror=null; this.src='${noImage}';">
-  <div class="Content-info">
-      <h3>${Content.Name}</h3>
-      <p class="rating">Score: ${Content.similarityScore != undefined ? Content.similarityScore.toFixed(0) + '%' : 'N/A'}</p>
-      <p class="rating">Community Rating: ${Content.CommunityRating !== undefined ? Content.CommunityRating.toFixed(2) : 'N/A'}</p>
-      <p class="year">Year: ${Content.ProductionYear || 'N/A'}</p>
-  </div>`;
+  // Built with DOM nodes: names come from server metadata and must never be parsed as HTML
+  const img = document.createElement('img');
+  img.src = imageUrl;
+  img.alt = `${Content.Name} cover`;
+  img.onerror = () => { img.onerror = null; img.src = noImage; };
+
+  const info = document.createElement('div');
+  info.classList.add('Content-info');
+  const addLine = (tag, className, text) => {
+    const el = document.createElement(tag);
+    if (className) el.classList.add(className);
+    el.textContent = text;
+    info.appendChild(el);
+  };
+  addLine('h3', null, Content.Name);
+  addLine('p', 'rating', `Score: ${typeof Content.similarityScore === 'number' ? Content.similarityScore.toFixed(0) + '%' : 'N/A'}`);
+  // CommunityRating can be null (items without a rating)
+  addLine('p', 'rating', `Community Rating: ${typeof Content.CommunityRating === 'number' ? Content.CommunityRating.toFixed(2) : 'N/A'}`);
+  addLine('p', 'year', `Year: ${Content.ProductionYear || 'N/A'}`);
+
+  ContentCard.append(img, info);
 
 
   // Make the Content card clickable to open the Content details in Jellyfin
@@ -84,19 +101,28 @@ function createContentCard(Content) {
     }
   });
   ContentCard.setAttribute('tabindex', '0'); // Make it focusable
+  // Announced as a link to the item in Jellyfin (Enter/Space open it, see above)
+  ContentCard.setAttribute('role', 'link');
+  ContentCard.setAttribute('aria-label', `${Content.Name} — open in Jellyfin`);
 
   return ContentCard;
 }
 
 // Function to display recommendations
-function displayRecommendations(recommendations) {
+// append: a later batch (infinite scroll) — an empty batch then adds nothing instead of replacing the page
+function displayRecommendations(recommendations, { append = false } = {}) {
   const loadingMessage = document.querySelector('.loading-message');
   if (loadingMessage) {
     loadingMessage.remove(); // Remove the loading message
   }
 
   if (!recommendations || recommendations.length === 0) {
-    recommendationsContainer.innerHTML = '<div class="no-results-message">No recommendations found. Try watching more Contents!</div>';
+    if (append) return;
+    // Added after the taste section instead of replacing the whole container (which erased that section too)
+    const message = document.createElement('div');
+    message.className = 'no-results-message';
+    message.textContent = 'No recommendations found. Try watching more Contents!';
+    recommendationsContainer.appendChild(message);
     return;
   }
 
@@ -127,6 +153,7 @@ function createBasedOnTastesContainer(recommendations) {
     return;
   }
 
+  let ContentGrid;
   if(tasteRecommendationsContainer.childElementCount == 0) {
     const title = document.createElement('h2');
     title.classList.add('because-you-watched-title');
@@ -137,11 +164,12 @@ function createBasedOnTastesContainer(recommendations) {
     ContentGrid.classList.add('Content-grid');
     tasteRecommendationsContainer.appendChild(ContentGrid);
 
+
     const loadMoreBtn = document.createElement('button');
     loadMoreBtn.classList.add('load-more-btn');
     loadMoreBtn.textContent = 'Load More';
     loadMoreBtn.addEventListener('click', async () => {
-      if (recommendationsShowed < window.recommendations.length) {
+      if (recommendationsShowed < (window.recommendations?.length ?? 0)) {
         createBasedOnTastesContainer(window.recommendations.slice(recommendationsShowed, recommendationsShowed + similarsToShow));
       } else {
         loadMoreBtn.style.display = 'none';
@@ -163,12 +191,15 @@ function displayBasedOnYourTastes(recommendations) {
 }
 
 // Jellyfin Initialization and Login Logic
-function InitializeJellyfin() {
+// explicitLogin: the Connect button, where typed credentials win over the saved session token
+function InitializeJellyfin(explicitLogin = false) {
   const server = document.getElementById("Server").value.trim(); // Trim whitespace
   const username = document.getElementById("Username").value.trim();
   const password = document.getElementById("Password").value.trim();
+  // The Jellyfin class keeps the session token after a login; with it, no password is needed
+  const hasSavedSession = typeof Jellyfin !== 'undefined' && typeof Jellyfin.getSavedAuth === 'function' && !!Jellyfin.getSavedAuth(server);
 
-  if (!server || !username || !password) {
+  if (!server || (!(username && password) && !hasSavedSession)) {
       showWindow("loginBox"); // Show login if fields are empty
       document.getElementById('loginErrorMessage').innerText = "Please fill in all server details.";
       document.getElementById("loginBtn").setAttribute('logged-in', 'false');
@@ -188,8 +219,10 @@ function InitializeJellyfin() {
   }
 
   window.jellyfin = new Jellyfin(server, username, password, {
-    onLoginError: (err) => {
-      const message = err?.message || "Authentication failed. Please check your credentials.";
+    onLoginError: (err, response) => {
+      // A password the server rejects is useless: never keep it (older versions saved it)
+      if (response?.status === 401) forgetSavedPassword();
+      const message = (!response && err?.message) || "Authentication failed. Please check your credentials.";
       showWindow("loginBox"); // Ensure login box is visible on error
       document.getElementById('loginErrorMessage').innerText = message;
       document.getElementById("loginBtn").setAttribute('logged-in', 'false');
@@ -203,7 +236,13 @@ function InitializeJellyfin() {
       jellyfinloginActionBtn.removeAttribute('inactive');
     },
     onLoginSuccess: () => {
+      // Logged in again (e.g. another account) after recommendations were shown: start over with the new session
+      if (window.Played) { location.reload(); return; }
       hideWindow("loginBox"); // Hide login box on successful login
+      // The Jellyfin class saved the session token: the password is no longer needed anywhere
+      forgetSavedPassword();
+      jellyfinloginActionBtn.removeAttribute('inactive');
+      if (jellyfinLogoutBtn) jellyfinLogoutBtn.hidden = false;
       document.getElementById("loginBtn").setAttribute('logged-in', 'true');
       // Clear any previous error messages
       document.getElementById('loginErrorMessage').innerText = "";
@@ -221,16 +260,28 @@ function InitializeJellyfin() {
     onSearchFinish: () => {
       // This callback might be for search results, not directly used here for recommendations.
     }
-  });
+  }, /* needsUserData: refresh watched status even when the library comes from the cache */ true, { preferCredentials: explicitLogin });
 }
 
 // Event listener for the Login/Connect button
 jellyfinloginActionBtn.addEventListener('click', () => {
-    InitializeJellyfin(); // Call initialization logic on click
+    InitializeJellyfin(true); // Call initialization logic on click
+});
+
+// Ends the Jellyfin session (the token stops working) and starts over at the login window
+jellyfinLogoutBtn?.addEventListener('click', async () => {
+  if (window.jellyfin?.logout) await window.jellyfin.logout();
+  location.reload();
 });
 
 // Event listener for cleaning memory
-cleanMemoryBtn.addEventListener('click', () => jellyfin.cleanDb());
+cleanMemoryBtn.addEventListener('click', async () => {
+  if (!confirm('Clean saved memory? The page memory and the Jellyfin library cache will be erased.')) return;
+  // Also works before logging in (there is no jellyfin instance then)
+  try { await window.memory?.reset?.(); } catch (error) { console.warn('Could not reset page memory:', error); }
+  if (window.jellyfin?.cleanDb) window.jellyfin.cleanDb(); // reloads the page
+  else location.reload();
+});
 
 // ======================
 // Storage Functions
@@ -243,22 +294,31 @@ function saveFieldsToStorage() {
     serverValue = serverValue.slice(0, -1);
     serverInput.value = serverValue; // Update input field
   }
-  const username = document.getElementById("Username").value.trim();
-  const password = document.getElementById("Password").value.trim();
-
+  // Only the server address is saved. The login is kept as a session token by the Jellyfin class
+  // (localStorage "jellyfinAuth"); username and password are never stored.
   localStorage.setItem("server", serverValue);
-  localStorage.setItem("username", username);
-  localStorage.setItem("password", password);
 }
 
 function loadFieldsFromStorage() {
   const server = localStorage.getItem("server");
+  // Saved by older versions: used one last time to get a session token, then removed (forgetSavedPassword)
   const username = localStorage.getItem("username");
   const password = localStorage.getItem("password");
 
   if (server) document.getElementById("Server").value = server;
   if (username) document.getElementById("Username").value = username;
   if (password) document.getElementById("Password").value = password;
+}
+
+// Removes the username/password older versions kept in localStorage and (through the [save] attribute the login
+// fields no longer have) in the pageMemory record. The session token makes them unnecessary.
+function forgetSavedPassword() {
+  localStorage.removeItem("password");
+  localStorage.removeItem("username");
+  const passwordInput = document.getElementById("Password");
+  if (passwordInput) passwordInput.value = "";
+  // Rewrites the pageMemory record without the login fields (pageMemory only saves after its restore finished)
+  try { window.memory?.savePageInfo?.(); } catch (e) { /* not ready yet: the next save rewrites the record */ }
 }
 
 // Load fields on page load
@@ -274,8 +334,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const username = localStorage.getItem("username");
     const password = localStorage.getItem("password");
 
-    // Only attempt to connect if all fields are present in local storage
-    if (server && username && password) {
+    // Connect when there is a saved session token, or credentials saved by an older version
+    const hasSavedSession = typeof Jellyfin !== 'undefined' && typeof Jellyfin.getSavedAuth === 'function' && !!Jellyfin.getSavedAuth(server);
+    if (server && ((username && password) || hasSavedSession)) {
         // If login box is hidden (meaning credentials were saved), attempt login
         if (document.getElementById("loginBtn").getAttribute('logged-in') === 'false') {
              InitializeJellyfin();
@@ -324,8 +385,10 @@ const getList = async (Library, PlayStatus) => {
 
   try {
     const items = await window.jellyfin.searchItems('', '', {});
-    // The Jellyfin.js searchItems function returns a promise that resolves with the item list
-    return items || []; // Ensure we always return an array
+    // The Jellyfin.js searchItems function returns a promise that resolves with the item list.
+    // Only these types are recommended. They are filtered here and not at load time: the library cache is shared
+    // with CoverMaker, and loading fewer types there would make each app reload the other's cache on every visit.
+    return (items || []).filter(item => !item?.Type || RECOMMENDABLE_TYPES.includes(item.Type)); // Ensure we always return an array
   } catch (error) {
     console.error(`Error fetching ${PlayStatus || 'all'} items from library '${Library}':`, error);
     return []; // Return empty array on error

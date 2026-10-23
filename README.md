@@ -1,6 +1,8 @@
 # Content Recommender
 
-This project is a web application that leverages your Jellyfin server to recommend Contents based on your watch history and preferences. It analyzes your watched Contents and suggests similar, unwatched Contents, considering various factors like genre, ratings, actors, directors, and production year.
+📚 **Technical docs (pt-BR):** [Documentation](docs/DOCUMENTACAO.md) · [Code audit & known issues](docs/AUDITORIA.md)
+
+This project is a web application that leverages your Jellyfin server to recommend Contents based on your watch history and preferences. It analyzes your watched Contents and suggests similar, unwatched Contents, considering factors like genres, tags, community rating, production year and title.
 
 ## Preview
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/fb6805fb-eeb3-4bca-aa5e-cca3bf9f6f5e" />
@@ -12,23 +14,23 @@ This project is a web application that leverages your Jellyfin server to recomme
 
 *   **Personalized Recommendations:** Get Content suggestions tailored to your viewing habits.
 *   **Jellyfin Integration:** Connects directly to your Jellyfin server to fetch your library data.
-*   **Configurable Similarity:** The `findSimilar.js` file allows you to adjust the weights for different attributes (genre, ratings, actors, etc.) to fine-tune the recommendation algorithm.
+*   **Configurable Similarity:** The `findSimilar.js` file allows you to adjust the weights for different attributes (genres, tags, rating, year, title) to fine-tune the recommendation algorithm.
 *   **User-Friendly Interface:** A clean and intuitive interface to log in to your Jellyfin server and view recommendations.
 *   **Web-Based:** Accessible directly through your web browser without any local installation (via the provided GitHub Pages link).
 
 ## How It Works
 
-1.  **Jellyfin Connection:** The application first prompts you to log in to your Jellyfin server using your server URL, username, and password.
+1.  **Jellyfin Connection:** The application first prompts you to log in to your Jellyfin server using your server URL, username, and password. Only the session token is kept in the browser (never the password); **Sign out** ends the session.
 2.  **Data Fetching:** Once connected, it fetches your played and unplayed Content libraries.
 3.  **Similarity Calculation:** The `findSimilar.js` script calculates a similarity score between your watched Contents and the unwatched ones. This score is based on a weighted combination of:
-    *   Genres
-    *   Critic Ratings
-    *   Community Ratings
-    *   Actors
-    *   Directors/Writers
-    *   Studios
+    *   Genres (rarer genres count more)
     *   Tags
+    *   Community Rating
     *   Production Year
+    *   Words in the title, and titles that start the same way (sequels, series)
+
+    `WEIGHTS` also lists critic rating, actors, directors/writers and studios, but they are not used in the
+    calculation yet (the app does not download people or studios for every item).
 4.  **Recommendation Generation:** It then selects a subset of your watched Contents and generates recommendations for each, displaying the top-scoring similar unwatched Contents.
 
 ## Live Demo
@@ -43,7 +45,7 @@ You can try out the Content Recommender directly on GitHub Pages:
 *   **`style.css`**: Contains all the CSS for styling the application, ensuring a visually appealing and responsive design.
 *   **`script.js`**: The main JavaScript file responsible for handling user interactions, connecting to Jellyfin, processing recommendations, and displaying them.
 *   **`findSimilar.js`**: Contains the core logic for calculating Content similarities and generating recommendations. This is where you can tweak the `WEIGHTS` object to customize the recommendation algorithm.
-*   **External Libraries**: The project utilizes several external JavaScript libraries for Jellyfin API interaction, utility functions, and window management. These are loaded from a CDN.
+*   **`js/vendor/`**: Copies of the shared libraries it uses — Jellyfin API client and window handling from [CoverMaker](https://github.com/jeffersoncgo/CoverMaker), utilities from [cdn](https://github.com/jeffersoncgo/cdn). Kept as copies so a change in those repositories cannot break this app unnoticed.
 
 ## How to Run Locally (Optional)
 
@@ -51,12 +53,16 @@ While the application is hosted on GitHub Pages, you can also run it locally for
 
 1.  **Clone the Repository:**
     ```bash
-    git clone https://github.com/jeffersoncgo/Content-recommender.git
-    cd Content-recommender
+    git clone https://github.com/jeffersoncgo/content-recommender.git
+    cd content-recommender
     ```
 
-2.  **Open `index.html`:**
-    Open the `index.html` file in your web browser.
+2.  **Serve the folder and open it:**
+    ```bash
+    python3 -m http.server 8080
+    ```
+    Then open `http://localhost:8080/` (opening `index.html` directly as a `file://` page can block the requests to
+    your Jellyfin server).
 
 3.  **Configure Jellyfin:**
     *   You will see a "Login to Jellyfin" button. Click it to reveal the login form.
@@ -68,18 +74,20 @@ While the application is hosted on GitHub Pages, you can also run it locally for
 
 ## Customization
 
-The `findSimilar.js` file contains a `WEIGHTS` object that allows you to adjust the importance of different Content attributes in the similarity calculation. You can modify these values to prioritize certain aspects of Content similarity according to your preferences. For example, increasing the `DIRECTOR_WRITER` weight will give more importance to shared directors or writers.
+The `findSimilar.js` file contains a `WEIGHTS` object that allows you to adjust the importance of different Content attributes in the similarity calculation. You can modify these values to prioritize certain aspects of Content similarity according to your preferences. For example, increasing the `GENRE` weight will give more importance to shared genres. (`CRITIC_RATING`, `ACTOR`, `DIRECTOR_WRITER` and `STUDIO` are not used yet.)
 
 ```javascript
 const WEIGHTS = {
   GENRE: 4,
   CRITIC_RATING: 2,
   COMMUNITY_RATING: 3,
-  ACTOR: 3,
-  DIRECTOR_WRITER: 5, // Higher weight for directors/writers
-  STUDIO: 1,
+  ACTOR: 3,           // not used yet
+  DIRECTOR_WRITER: 5, // not used yet
+  STUDIO: 1,          // not used yet
   TAG: 4,
   PRODUCTION_YEAR: 2,
+  NAME: 3,
+  START_WITH: 6
 };
 ```
 
