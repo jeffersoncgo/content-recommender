@@ -1,5 +1,7 @@
 # Content Recommender
 
+📚 **Technical docs (pt-BR):** [Documentation](docs/DOCUMENTACAO.md) · [Code audit & known issues](docs/AUDITORIA.md)
+
 This project is a web application that leverages your Jellyfin server to recommend Contents based on your watch history and preferences. It analyzes your watched Contents and suggests similar, unwatched Contents, considering various factors like genre, ratings, actors, directors, and production year.
 
 ## Preview
