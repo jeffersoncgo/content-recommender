@@ -1,5 +1,7 @@
 # Content Recommender — Auditoria: erros, correções sugeridas e melhorias
 
+> Plano de correções em andamento (fases, regra de não perder funcionalidade, decisões): [`CoverMaker/docs/PLANO-DE-CORRECOES.md`](https://github.com/jeffersoncgo/CoverMaker/blob/main/docs/PLANO-DE-CORRECOES.md).
+
 > Revisão do código em `e397ccb`. 🔎 = leitura de código, 🧪 = reproduzido.
 > O app depende de `CoverMaker/js/jellyfin.js` e de vários arquivos de `jeffersoncgo/cdn`; os problemas dessas bibliotecas
 > estão em `CoverMaker/docs/AUDITORIA.md` (`CM-xx`) e `cdn/docs/AUDITORIA.md` (`CDN-xx`).
