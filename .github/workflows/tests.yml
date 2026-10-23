@@ -1,0 +1,23 @@
+# Checks without a browser. The site itself is published by GitHub Pages straight from the branch.
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Unit tests (syntax, vendored dependencies, tokenizer, random picks)
+        run: node --test "tests/*.test.js"
