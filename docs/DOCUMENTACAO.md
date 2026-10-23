@@ -149,7 +149,14 @@ score      = min(1, (0,65 × genreScore + 0,35 × tagScore) × penalidade) × 10
 Como CoverMaker e este app estão na mesma origem (`jeffersoncgo.github.io`), esses dados são **compartilhados** entre eles.
 **Clean Saved Memory** chama `jellyfin.cleanDb()` (apaga o cache do Jellyfin e recarrega).
 
-## 8. Rodar localmente
+## 8. Testes
+
+`node --test "tests/*.test.js"` (Node 20+): sintaxe, dependências em `js/vendor/` presentes e carregadas pelo
+`index.html`, tokenizer e sorteio. Com `cdn` e `CoverMaker` clonados ao lado, confere também que as cópias são
+idênticas às originais. Roda no CI em todo push (`.github/workflows/tests.yml`). Testes no navegador:
+`CoverMaker/tests/browser/cr_auth.js`.
+
+## 9. Rodar localmente
 
 ```bash
 git clone https://github.com/jeffersoncgo/content-recommender.git

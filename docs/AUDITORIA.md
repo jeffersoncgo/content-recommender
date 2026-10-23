@@ -18,13 +18,13 @@
 | CR-04 ✅ | Alta | `script.js:251`, `index.html:43` | Senha em texto puro no `localStorage` e no IndexedDB (origem compartilhada) 🔎 |
 | CR-05 ✅ | Alta | `index.html:59-68` | Scripts remotos de outros repositórios sem versão nem SRI 🔎 |
 | CR-06 ◐ | Média | `findSimilar.js:102-121,411-427` | Perfil de gosto "estrito" praticamente vira só "nota > X" 🧪/🔎 |
-| CR-07 | Média | `findSimilar.js:1-12`, `README.md` | Atores/diretores/estúdios/nota da crítica não entram no cálculo (README diz que entram) 🔎 |
+| CR-07 ✅ | Média | `findSimilar.js:1-12`, `README.md` | Atores/diretores/estúdios/nota da crítica não entram no cálculo (README diz que entram) 🔎 |
 | CR-08 ✅ | Média | `script_infinity_scroll.js`, `script.js:98-100` | Scroll dispara lotes concorrentes; resultado vazio apaga a página inteira 🔎 |
 | CR-09 ✅ | Média | `script.js:211-214` | Filtro de tipos (`IncludeItemsTypes`) nunca é aplicado 🔎 |
 | CR-10 ✅ | Média | `script.js:69,144,233` | Exceções: `CommunityRating` nulo, Load More no modo não estrito, limpar memória sem login 🔎 |
 | CR-11 ◐ | Baixa | `findSimilar.js:127-133,232`, `jellyfin.js:662-664` | Títulos não-ASCII perdem tokens; sorteio enviesado; `isPlayed` com campo errado 🔎 |
 | CR-12 ✅ | Baixa | `findSimilar.js:387,430,451`, `style.css:255-258` | Imagem pedida em 480×270 e exibida em cartão retrato 180×270 🔎 |
-| CR-13 | Baixa | `README.md`, `index.html` | Documentação e pequenos detalhes de HTML/acessibilidade 🔎 |
+| CR-13 ✅ | Baixa | `README.md`, `index.html` | Documentação e pequenos detalhes de HTML/acessibilidade 🔎 |
 
 ---
 
@@ -123,7 +123,9 @@ profile.push({ operator: '..',  fields: ['ProductionYear'], queries: [avgYear - 
 const recs = searchEngine.search(unwatchedContents, profileQueries, undefined, /* isLaxQuery */ true);
 ```
 
-### CR-07 — Pesos declarados e não usados (Média) 🔎
+### CR-07 — Pesos declarados e não usados (Média) 🔎 — ✅ corrigido (2026-10-23)
+
+Como ficou: README descreve só os fatores usados (gêneros, tags, nota da comunidade, ano, título); os pesos não usados continuam em `WEIGHTS`, comentados como "not used yet".
 
 `WEIGHTS.CRITIC_RATING`, `ACTOR`, `DIRECTOR_WRITER` e `STUDIO` não são usados em `calculateSimilarity`, e o cliente
 Jellyfin nem pede `People`/`CriticRating`/`Studios` com `Fields` suficientes. O README descreve o cálculo com esses
@@ -170,7 +172,9 @@ método. A atribuição nunca acontece. Defina `IncludeItemsTypes` logo após cr
 (~180×270, `object-fit: cover`). Peça a proporção do cartão, por exemplo `makeImageUrl(Content.Id, 360, 540, 80)`.
 `noImage` depende de `placehold.co`; um SVG local evita a requisição externa.
 
-### CR-13 — Documentação e HTML (Baixa) 🔎
+### CR-13 — Documentação e HTML (Baixa) 🔎 — ✅ corrigido (2026-10-23)
+
+Como ficou: README corrigido (`git clone`, servidor local, dependências, login por token); comentário do HTML corrigido; foco vai para o primeiro campo quando o usuário abre uma janela; "Clean Saved Memory" pede confirmação; cartões com `role="link"` e nome acessível.
 
 - README: descreve atores/diretores/estúdios/nota da crítica no cálculo (CR-07); o `git clone` usa
   `Content-recommender` (o repositório é `content-recommender`); não menciona as dependências remotas nem o Meilisearch.
