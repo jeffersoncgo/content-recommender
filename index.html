@@ -36,14 +36,16 @@
       </div>
       <div class="form-group">
         <label for="Username">Username</label>
-        <input type="text" id="Username" placeholder="Your username" value="admin" save>
+        <input type="text" id="Username" placeholder="Your username" value="admin" autocomplete="username">
       </div>
       <div class="form-group">
         <label for="Password">Password</label>
-        <input type="password" id="Password" placeholder="Your password" value="password" save>
+        <!-- Not saved: after the first login only the session token is kept (see Jellyfin.getSavedAuth) -->
+        <input type="password" id="Password" placeholder="Your password" autocomplete="current-password">
       </div>
       <!-- connect Button, it just refresh the page, so the onLoad functions can start -->
       <button id="loginAction">Connect</button>
+      <button id="logoutAction" type="button" hidden title="End the Jellyfin session saved in this browser">Sign out</button>
       <label id="loginErrorMessage" class="error-message" role="alert"></label>
     </div>
   </div>

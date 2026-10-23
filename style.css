@@ -398,6 +398,11 @@ button.load-more-btn:disabled {
   gap: 1.25rem;
 }
 
+/* The [hidden] attribute must win over any display rule */
+.floatWindow button[hidden] {
+  display: none;
+}
+
 .floatWindow .form-group {
   display: flex;
   flex-direction: column;

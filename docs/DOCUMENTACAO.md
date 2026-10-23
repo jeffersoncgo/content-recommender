@@ -46,13 +46,16 @@ Qualquer push em `main` dos repositórios `cdn` e `CoverMaker` altera este app i
 
 ```
 carregamento
- ├─ loadFieldsFromStorage()                       servidor/usuário/senha do localStorage
+ ├─ loadFieldsFromStorage()                       servidor (+ usuário/senha só de versões antigas, usados 1 vez)
  └─ DOMContentLoaded
-     ├─ credenciais salvas? → InitializeJellyfin() │ senão → mostra #loginBox
+     ├─ sessão salva (Jellyfin.getSavedAuth) ou credenciais antigas? → InitializeJellyfin() │ senão → mostra #loginBox
      └─ new pageMemory().init()                    restaura campos [save]
 
-InitializeJellyfin()
- └─ new Jellyfin(server, user, pass, eventos)      (classe do CoverMaker: login, getLibraries, cache)
+InitializeJellyfin(explicitLogin)                  explicitLogin = botão Connect
+ └─ new Jellyfin(server, user, pass, eventos, false, { preferCredentials: explicitLogin })
+     │                                             (classe do CoverMaker: login por token ou senha, getLibraries, cache)
+     ├─ onLoginSuccess → forgetSavedPassword()     apaga usuário/senha antigos; mostra "Sign out"
+     └─ Sign out → jellyfin.logout() + recarrega   POST /Sessions/Logout, apaga a sessão salva
      └─ onLibraryLoad
          ├─ updateTestesSugestions(true)           seção "Based on Your General Watched Content"
          └─ updateRecommendations()                seção "Because you watched" (3 âncoras × 6 itens)
@@ -124,8 +127,10 @@ score      = min(1, (0,65 × genreScore + 0,35 × tagScore) × penalidade) × 10
 
 | Onde | Chave | Conteúdo |
 |---|---|---|
-| `localStorage` | `server`, `username`, `password` | Credenciais (texto puro) |
-| IndexedDB `pageMemoryDB` | URL da página | Campos de login (`[save]`) |
+| `localStorage` | `server` | Endereço do servidor |
+| `localStorage` | `jellyfinAuth` | Sessão `{ server, serverId, userId, token }` (classe `Jellyfin`; nunca a senha) |
+| `localStorage` | `username`, `password` | Só de versões antigas: usados uma vez para obter o token e apagados |
+| IndexedDB `pageMemoryDB` | URL da página | Campos `[save]` (só o servidor; usuário e senha não são mais salvos) |
 | IndexedDB `<Server.Id>` | `Tags`, `Genres`, `Studios`, `<libraryId>` | Cache de bibliotecas (classe `Jellyfin`) |
 
 Como CoverMaker e este app estão na mesma origem (`jeffersoncgo.github.io`), esses dados são **compartilhados** entre eles.

@@ -3,6 +3,7 @@
 > Plano de correções em andamento (fases, regra de não perder funcionalidade, decisões): [`CoverMaker/docs/PLANO-DE-CORRECOES.md`](https://github.com/jeffersoncgo/CoverMaker/blob/main/docs/PLANO-DE-CORRECOES.md).
 
 > Revisão do código em `e397ccb`. 🔎 = leitura de código, 🧪 = reproduzido.
+> Status: ✅ corrigido · ◐ em parte.
 > O app depende de `CoverMaker/js/jellyfin.js` e de vários arquivos de `jeffersoncgo/cdn`; os problemas dessas bibliotecas
 > estão em `CoverMaker/docs/AUDITORIA.md` (`CM-xx`) e `cdn/docs/AUDITORIA.md` (`CDN-xx`).
 
@@ -10,11 +11,11 @@
 
 | ID | Sev. | Onde | Problema |
 |---|---|---|---|
-| CR-14 | **Crítica** | `script.js:326` + `CoverMaker/js/jellyfin.js:754` | **Nenhuma recomendação aparece desde 2025-12-01**: o `AbortSignal` cai no parâmetro `tempLimit` 🧪 |
+| CR-14 ✅ | **Crítica** | `script.js:326` + `CoverMaker/js/jellyfin.js:754` | **Nenhuma recomendação aparece desde 2025-12-01**: o `AbortSignal` cai no parâmetro `tempLimit` 🧪 |
 | CR-01 | Alta | `script.js:190` | Histórico "assistido" congela no primeiro carregamento (cache sem atualização de `UserData`) 🔎 |
 | CR-02 | Alta | dependência `jellyfin.js` | Servidores com plugin Meilisearch: itens chegam sem `UserData` (nada "assistido") ou bibliotecas nem carregam 🔎 |
-| CR-03 | Alta | `script.js:64-71` | XSS: nome do item interpolado em `innerHTML` e em atributo 🔎 |
-| CR-04 | Alta | `script.js:251`, `index.html:43` | Senha em texto puro no `localStorage` e no IndexedDB (origem compartilhada) 🔎 |
+| CR-03 ✅ | Alta | `script.js:64-71` | XSS: nome do item interpolado em `innerHTML` e em atributo 🔎 |
+| CR-04 ✅ | Alta | `script.js:251`, `index.html:43` | Senha em texto puro no `localStorage` e no IndexedDB (origem compartilhada) 🔎 |
 | CR-05 | Alta | `index.html:59-68` | Scripts remotos de outros repositórios sem versão nem SRI 🔎 |
 | CR-06 | Média | `findSimilar.js:102-121,411-427` | Perfil de gosto "estrito" praticamente vira só "nota > X" 🧪/🔎 |
 | CR-07 | Média | `findSimilar.js:1-12`, `README.md` | Atores/diretores/estúdios/nota da crítica não entram no cálculo (README diz que entram) 🔎 |
@@ -27,7 +28,7 @@
 
 ---
 
-### CR-14 — Nenhuma recomendação desde 2025-12-01 (Crítica) 🧪
+### CR-14 — Nenhuma recomendação desde 2025-12-01 (Crítica) 🧪 — ✅ corrigido em `CoverMaker/js/jellyfin.js` (2026-10-23; vale quando o CoverMaker for publicado)
 
 `getList` chama `jellyfin.searchItems('', '', {})` com três argumentos. O `Controller` acrescenta o `AbortSignal` como
 último argumento, que cai no 4º parâmetro de `searchItems` — `tempLimit`, adicionado ao `jellyfin.js` do CoverMaker
@@ -63,7 +64,7 @@ get recommendations!". Para usuários não administradores, a inicialização do
 carregam (detalhes em `CM-08`). Correções: com CR-01 aplicado, `updateLibraryUserData` preenche o `UserData`
 depois da carga; e no `jellyfin.js`, cair para a carga "vanilla" quando o Meilisearch falhar.
 
-### CR-03 — XSS nos cartões (Alta) 🔎
+### CR-03 — XSS nos cartões (Alta) 🔎 — ✅ corrigido (2026-10-23)
 
 ```js
 ContentCard.innerHTML = `<img src="${imageUrl}" alt="${Content.Name} cover" …> … <h3>${Content.Name}</h3>`;
@@ -82,7 +83,7 @@ const h3 = document.createElement('h3'); h3.textContent = Content.Name;
 
 O mesmo vale para `showLoadingLibraries` e `addVideoposter` do `jellyfin.js` (ver `CM-06`).
 
-### CR-04 — Credenciais (Alta) 🔎
+### CR-04 — Credenciais (Alta) 🔎 — ✅ corrigido (2026-10-23)
 
 `saveFieldsToStorage` grava `localStorage.password` e `#Password` tem `save` (o `pageMemory` grava o valor no
 IndexedDB). Os campos vêm pré-preenchidos com `admin`/`password`. Como os apps do usuário `jeffersoncgo` no GitHub Pages
